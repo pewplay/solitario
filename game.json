@@ -1,8 +1,14 @@
 {
+  "$schema": "https://raw.githubusercontent.com/pewplay/pewplay/main/schema/game.schema.json",
   "title": "Classic Solitaire",
   "description": "Relax with a traditional game of Klondike Solitaire.",
-  "keywords": ["solitaire", "cards", "classic", "puzzle"],
   "category": "Card",
+  "tags": [
+    "solitaire",
+    "cards",
+    "classic",
+    "puzzle"
+  ],
   "author": "PewPlay",
   "playMode": "SinglePlayer"
 }
