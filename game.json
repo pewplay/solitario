@@ -2,6 +2,32 @@
   "$schema": "https://raw.githubusercontent.com/pewplay/pewplay/main/schema/game.schema.json",
   "title": "Classic Solitaire",
   "description": "Relax with a traditional game of Klondike Solitaire.",
+  "about": "Classic Solitaire is a browser game where you move cards between tableau columns and foundation piles, building down by alternating color and up by suit.\n\nStart a round in your browser and use the controls below to play.",
+  "howToPlay": "Move cards between tableau columns and foundation piles, building down by alternating color and up by suit.",
+  "controls": [
+    {
+      "input": "Click / drag",
+      "action": "Move a card or stack"
+    },
+    {
+      "input": "Play / Pause",
+      "action": "Control the game timer"
+    }
+  ],
+  "tips": [
+    "Use click / drag to move a card or stack.",
+    "Try another round to practice the timing and strategy."
+  ],
+  "faq": [
+    {
+      "question": "How do I play Classic Solitaire?",
+      "answer": "Move cards between tableau columns and foundation piles, building down by alternating color and up by suit."
+    },
+    {
+      "question": "Can I play Classic Solitaire in a browser?",
+      "answer": "Yes. Open the game page and play without installing an app."
+    }
+  ],
   "category": "Card",
   "tags": [
     "solitaire",
@@ -9,6 +35,9 @@
     "classic",
     "puzzle"
   ],
-  "author": "PewPlay",
-  "playMode": "SinglePlayer"
+  "playMode": "SinglePlayer",
+  "orientation": "any",
+  "cover": "cover.png",
+  "draft": true,
+  "author": "PewPlay"
 }
