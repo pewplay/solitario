@@ -1,43 +1,62 @@
 {
   "$schema": "https://raw.githubusercontent.com/pewplay/pewplay/main/schema/game.schema.json",
   "title": "Classic Solitaire",
-  "description": "Relax with a traditional game of Klondike Solitaire.",
-  "about": "Classic Solitaire is a browser game where you move cards between tableau columns and foundation piles, building down by alternating color and up by suit.\n\nStart a round in your browser and use the controls below to play.",
-  "howToPlay": "Move cards between tableau columns and foundation piles, building down by alternating color and up by suit.",
+  "description": "Play Klondike on green felt with a timer, move counter and old-school scoring: build every suit from Ace to King, free in your browser.",
+  "about": "Classic Solitaire brings back the Klondike game many of us first played on a desktop computer: seven tableau columns, a stock pile that deals one card at a time, and four foundations to fill from Ace to King. The green felt table, the move counter and the running clock all feel familiar, so you can jump straight in.\n\nThe game keeps score the traditional way. Moving cards to the foundations and revealing hidden tableau cards earns points, pulling a card back from a foundation costs 15, recycling the waste pile costs 100, and every ten seconds on the clock takes away two. Finish fast and you get a time bonus, plus a shower of confetti. When all cards are face up and the stock is empty, an Auto Win button finishes the game for you.\n\nIt is a calm, focused card game for anyone who wants a quick round or wants to chase a better score.",
+  "howToPlay": "Build four foundation piles, one per suit, from Ace up to King. In the tableau, stack cards in descending order with alternating red and black colors, and place only Kings in empty columns. Click the stock to deal a card to the waste pile; click a card to select it, then click where it should go, or double-click it to send it straight to its foundation.",
   "controls": [
     {
-      "input": "Click / drag",
-      "action": "Move a card or stack"
+      "input": "Click / Tap",
+      "action": "Select a card, then its destination"
     },
     {
-      "input": "Play / Pause",
-      "action": "Control the game timer"
+      "input": "Double-click",
+      "action": "Send a card to its foundation"
+    },
+    {
+      "input": "Click stock",
+      "action": "Deal a card or recycle the waste"
+    },
+    {
+      "input": "Pause button",
+      "action": "Pause and resume the timer"
     }
   ],
   "tips": [
-    "Use click / drag to move a card or stack.",
-    "Try another round to practice the timing and strategy."
+    "Turn over face-down tableau cards whenever you can: each one is worth 5 points and opens new moves.",
+    "Keep an empty column for a King that frees a long pile of hidden cards.",
+    "Avoid recycling the stock too often, because each pass through the waste costs 100 points.",
+    "Play quickly once the game is solved: the clock slowly lowers your score and a fast finish earns a bigger time bonus."
   ],
   "faq": [
     {
-      "question": "How do I play Classic Solitaire?",
-      "answer": "Move cards between tableau columns and foundation piles, building down by alternating color and up by suit."
+      "question": "Is Classic Solitaire free to play?",
+      "answer": "Yes. Classic Solitaire is completely free and runs in your browser, with no download or sign-up."
     },
     {
-      "question": "Can I play Classic Solitaire in a browser?",
-      "answer": "Yes. Open the game page and play without installing an app."
+      "question": "Can I play on a phone or tablet?",
+      "answer": "Yes. Tap a card to select it and tap the destination to move it. The cards are small on phones, so a tablet or a larger screen is more comfortable."
+    },
+    {
+      "question": "How is the score calculated?",
+      "answer": "It uses standard Klondike scoring: points for foundation moves and revealed cards, penalties for recycling the stock and for time spent, and a time bonus when you win after more than 30 seconds."
     }
   ],
   "category": "Card",
   "tags": [
     "solitaire",
-    "cards",
-    "classic",
-    "puzzle"
+    "klondike",
+    "patience",
+    "card game",
+    "classic"
   ],
+  "author": "PewPlay",
   "playMode": "SinglePlayer",
   "orientation": "any",
   "cover": "cover.png",
-  "draft": true,
-  "author": "PewPlay"
+  "screenshots": [
+    "screenshots/1.png",
+    "screenshots/2.png",
+    "screenshots/3.png"
+  ]
 }
