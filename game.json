@@ -1,32 +1,40 @@
 {
   "$schema": "https://raw.githubusercontent.com/pewplay/pewplay/main/schema/game.schema.json",
   "title": "Classic Solitaire",
-  "description": "Play Klondike on green felt with a timer, move counter and old-school scoring: build every suit from Ace to King, free in your browser.",
-  "about": "Classic Solitaire brings back the Klondike game many of us first played on a desktop computer: seven tableau columns, a stock pile that deals one card at a time, and four foundations to fill from Ace to King. The green felt table, the move counter and the running clock all feel familiar, so you can jump straight in.\n\nThe game keeps score the traditional way. Moving cards to the foundations and revealing hidden tableau cards earns points, pulling a card back from a foundation costs 15, recycling the waste pile costs 100, and every ten seconds on the clock takes away two. Finish fast and you get a time bonus, plus a shower of confetti. When all cards are face up and the stock is empty, an Auto Win button finishes the game for you.\n\nIt is a calm, focused card game for anyone who wants a quick round or wants to chase a better score.",
-  "howToPlay": "Build four foundation piles, one per suit, from Ace up to King. In the tableau, stack cards in descending order with alternating red and black colors, and place only Kings in empty columns. Click the stock to deal a card to the waste pile; click a card to select it, then click where it should go, or double-click it to send it straight to its foundation.",
+  "description": "Play classic Klondike solitaire on green felt with drag and drop, tap-to-move, undo, a timer and old-school scoring. Free in your browser, on desktop and mobile.",
+  "about": "Classic Solitaire brings back the Klondike game many of us first played on a desktop computer: seven tableau columns, a stock pile that deals one card at a time, and four foundations to fill from Ace to King. The green felt table, the move counter and the running clock all feel familiar, so you can jump straight in.\n\nCards resize to fill your screen, whether you play on a large monitor, a tablet or a phone held upright or sideways. Drag cards with the mouse or your finger, or simply tap a card to send it to the best available spot. Undo takes back a move, and your game in progress is saved, so you can close the page and continue later.\n\nThe game keeps score the traditional way. Moving cards to the foundations and revealing hidden tableau cards earns points, pulling a card back from a foundation costs 15, recycling the waste pile costs 100, and every ten seconds on the clock takes away two. Finish in 30 seconds or more and you get a time bonus, plus a shower of confetti. When every card is face up and the stock is empty, an Auto Finish button completes the game for you. Your best score and games won are kept on your device.",
+  "howToPlay": "Build four foundation piles, one per suit, from Ace up to King. In the tableau, stack cards in descending order with alternating red and black colors; you can move a whole face-up run at once, and only a King (or a run starting with a King) can fill an empty column. Tap or click the stock to deal a card to the waste pile; when the stock is empty, tap it again to turn the waste over. Drag a card or a run of cards onto a valid pile, or tap a card to move it automatically: it goes to its foundation when possible, otherwise to a column where it fits.",
   "controls": [
     {
-      "input": "Click / Tap",
-      "action": "Select a card, then its destination"
+      "input": "Drag (mouse or finger)",
+      "action": "Move a card or a run of cards"
     },
     {
-      "input": "Double-click",
-      "action": "Send a card to its foundation"
+      "input": "Tap / Click a card",
+      "action": "Send it to the best valid spot"
     },
     {
-      "input": "Click stock",
+      "input": "Tap / Click stock",
       "action": "Deal a card or recycle the waste"
     },
     {
-      "input": "Pause button",
+      "input": "Undo button / Ctrl+Z",
+      "action": "Take back the last move"
+    },
+    {
+      "input": "Pause button / P",
       "action": "Pause and resume the timer"
+    },
+    {
+      "input": "New button / N",
+      "action": "Start a new deal"
     }
   ],
   "tips": [
     "Turn over face-down tableau cards whenever you can: each one is worth 5 points and opens new moves.",
     "Keep an empty column for a King that frees a long pile of hidden cards.",
     "Avoid recycling the stock too often, because each pass through the waste costs 100 points.",
-    "Play quickly once the game is solved: the clock slowly lowers your score and a fast finish earns a bigger time bonus."
+    "Playing a waste card onto the tableau first and then to its foundation earns 15 points instead of 10."
   ],
   "faq": [
     {
@@ -35,11 +43,15 @@
     },
     {
       "question": "Can I play on a phone or tablet?",
-      "answer": "Yes. Tap a card to select it and tap the destination to move it. The cards are small on phones, so a tablet or a larger screen is more comfortable."
+      "answer": "Yes. The table adapts to any screen in portrait or landscape. Drag cards with your finger, or tap a card to move it to the best available spot."
+    },
+    {
+      "question": "Is my game saved?",
+      "answer": "Yes. The game in progress, your best score and the number of games won are saved in your browser, so you can close the page and pick up where you left off."
     },
     {
       "question": "How is the score calculated?",
-      "answer": "It uses standard Klondike scoring: points for foundation moves and revealed cards, penalties for recycling the stock and for time spent, and a time bonus when you win after more than 30 seconds."
+      "answer": "It uses standard Klondike scoring: points for foundation moves and revealed cards, penalties for recycling the stock and for time spent, and a time bonus of 700,000 divided by your time in seconds when you win after 30 seconds or more."
     }
   ],
   "category": "Card",

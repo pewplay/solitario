@@ -1,2450 +1,617 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
-
-
-
-
-
-
-  <title>Classic Solitaire</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <link rel="stylesheet" href="bootstrap.min.css">
-
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Classic Solitaire</title>
 <style>
-/* Thanks to
-   @donpark on GitHub Scalable CSS Playing Cards
-   https://donpark.github.io/scalable-css-playing-cards/ */
+:root{--felt1:#1f8f50;--felt2:#13703c;--felt3:#0a4c27;--red:#c8102e;--black:#17181c;--gold:#ffd23f}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;height:100%;height:100dvh;overflow:hidden;background:var(--felt3)}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#f4f7f5;
+  background:radial-gradient(ellipse 120% 90% at 50% 30%,var(--felt1) 0%,var(--felt2) 55%,var(--felt3) 100%);
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:none;overscroll-behavior:none}
+button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
 
-@font-face {
-  font-family: 'Suit-Regular';
-  src: url("https://bfa.github.io/solitaire-js/fonts/suit-regular.eot");
-  src: url("https://bfa.github.io/solitaire-js/fonts/suit-regular.eot?#iefix") format('embedded-opentype'), url("https://bfa.github.io/solitaire-js/fonts/suit-regular.woff") format('woff'), url("https://bfa.github.io/solitaire-js/fonts/suit-regular.ttf") format('truetype'), url("https://bfa.github.io/solitaire-js/fonts/suit-regular.svg#suit-regular") format('svg');
-  font-weight: normal;
-  font-style: normal;
-}
-html, body {
-   width: 100%;
-   height: 100%;
-}
-body {
-   position: relative;
-   color: #f3f5f7;
-   background: #0e8b44 url('https://bfa.github.io/solitaire-js/img/green_felt.jpg');
-   background-size: cover;
-   background-position: center;
-}
-.navbar {
-   background: rgba(8,8,8,.75);
-}
-.navbar a {
-   color: #fff;
-}
-.navbar li[data-active="false"] {
-   opacity: 0.5;
-   pointer-events: none;
-}
-.navbar li[data-active="true"] {
-   opacity: 1;
-   pointer-events: auto;
-}
-.template {
-   display: none;
-}
-#score {
-   position: relative;
-   background: rgba(0,0,0,.15);
-   margin-top: 1.5em;
-   margin-bottom: 0.5em;
-   padding: 1em;
-   line-height: 1;
-}
-#score > * {
-   display: inline-block;
-   min-width: 100px;
-}
-#score > *:last-child {
-   float: right;
-   text-align: right;
-}
-#score label {
-   margin-bottom: 0;
-}
-#score .timer button {
-   display: none;
-   position: absolute;
-   -webkit-appearance: none;
-   background: transparent;
-   outline: none;
-   border: 0;
-   padding: 0;
-   top: 0;
-   left: 0;
-   width: 3em;
-   height: 100%;
-}
-#score .timer button i {
-   position: absolute;
-   top: 0;
-   left: 0;
-   width: 100%;
-   height: 100%;
-   font-size: 0;
-}
-#score .timer button i::before {
-   position: absolute;
-   top: 50%;
-   left: 50%;
-   width: 0.75em;
-   height: 1em;
-   margin-left: -0.375em;
-   margin-top: -0.5em;
-   font-size: 1.5rem;
-   content: none;
-}
-#score .timer button i#play::before {
-   border-top: 8px solid transparent;
-   border-left: 12px solid #fff;
-   border-bottom: 8px solid transparent;
-}
-#score .timer button i#pause::before {
-   border-right: 4px solid #fff;
-   border-left: 4px solid #fff;
-}
-[data-gameplay="active"] #score .timer button,
-[data-gameplay="paused"] #score .timer button {
-   display: inline-block;
-}
-[data-gameplay="active"] #score .timer button i#pause::before,
-[data-gameplay="paused"] #score .timer button i#play::before {
-   content: '';
-}
-[data-gameplay="active"] #score,
-[data-gameplay="paused"] #score {
-   padding-left: 3em;
-}
-#auto-win {
-   display: none;
-   -webkit-appearance: none;
-   outline: none;
-   border: 0;
-   position: absolute;
-   z-index: 1;
-   bottom: 0;
-   width: 100%;
-   background: rgba(0,0,0,.8);
-   padding: 1em;
-   line-height: 1;
-}
-#table {
-   opacity: 0;
-   width: 100%;
-   padding: 15px 0;
-}
-#table > div {
-   position: relative;
-   margin-bottom: 10px;
-}
-#table > div:last-child {
-   margin-bottom: 0;
-}
-#table > div::after {
-   content: '';
-   display: table-cell;
-   clear: both;
-}
-#table ul {
-   display: inline-block;
-   padding: 0;
-}
-#table > div > ul {
-   position: absolute;
-   top: 0;
-   left: 0;
-   width: 100%;
-   height: 100%;
-}
-.pile {
-   display: block;
-   position: relative;
-   float: left;
-   width: 13%;
-   margin-right: 1.5%;
-   margin-bottom: 10px;
-   padding: 5px;
-}
-.pile:last-child {
-   margin-right: 0;
-}
-.pile::after {
-   content: '';
-   position: absolute;
-   top: 0;
-   left: 0;
-   width: 100%;
-   height: 100%;
-   border: 2px dotted rgba(0,0,0,.25);
-   border-radius: 5px;
-}
-.card {
-   display: block;
-   position: absolute;
-   top: 0;
-   left: 0;
-   background-color: #ddd;
-   background-image: url('https://bfa.github.io/solitaire-js/img/card_back_bg.png');
-   background-size: contain;
-   background-repeat: no-repeat;
-   width: 100%;
-   height: 100%;
-   font-family: 'Suit-Regular', sans-serif;
-   font-size: 0.6vw;
-   border-radius: 5px;
-   z-index: -1;
-}
-.card * {
-   pointer-events: none;
-}
-@media screen and (min-width: 768px) {
-   .card {
-      font-size: 0.325em;
-   }
-   .pile::after, .card {
-      border-radius: 10px;
-   }
-}
-@media screen and (min-width: 992px) {
-   .card {
-      font-size: 0.425em;
-   }
-}
-@media screen and (min-width: 1200px) {
-   .card {
-      font-size: 0.525em;
-   }
-}
-.card > div {
-   display: none;
-}
-.card.up {
-   background-image: url('https://bfa.github.io/solitaire-js/img/card_face_bg.png');
-   background-repeat: repeat;
-   color: #111;
-}
-.card.up > div {
-   display: block;
-}
-.card::before {
-   content: '';
-   display: block;
-   position: absolute;
-   width: 100%;
-   height: 100%;
-   border-radius: 5px;
-}
-.card[data-selected="true"]::before {
-   box-shadow: 0 0 6px 3px #FCDB1A;
-}
-@media screen and (min-width: 768px) {
-   .card::before {
-      border-radius: 10px;
-   }
-}
-.card .suit {
-   font-size: 5.8em;
-   font-weight: normal;
-   width: 0.6896551724137931em;
-   height: 0.786206896551724em;
-   line-height: 0.786206896551724em;
-   position: absolute;
-   text-align: center;
-}
-@media screen and (max-width: 767px) {
-   .card > div > .suit {
-      display: none;
-   }
-}
-.card .heart,
-.card .diamond {
-   color: #cc0000;
-}
-.card .spade .suit::before { content: '♠' }
-.card .heart .suit::before { content: '♥' }
-.card .diamond .suit::before { content: '♦' }
-.card .club .suit::before { content: '♣' }
-.card .corner {
-   line-height: 1;
-   position: absolute;
-   text-align: center;
-}
-.card .corner span {
-   display: block;
-   font-size: 9em;
-   font-weight: bold;
-   width: 1em;
-   text-align: center;
-}
-@media screen and (min-width: 768px) {
-   .card .corner span {
-      font-size: 3em;
-   }
-}
-.card .corner .suit {
-   margin-top: 0;
-   margin-left: 0;
-}
-.card .corner.top {
-   left: 0.64em;
-   top: 0.96em;
-}
-.card .corner.bottom {
-   bottom: 0.96em;
-   right: 0.64em;
-   -ms-transform: rotate(180deg);
-   -moz-transform: rotate(180deg);
-   -webkit-transform: rotate(180deg);
-   transform: rotate(180deg);
-}
-.card .ace span.suit.middle_center {
-   font-size: 10.24em;
-   left: 50%;
-   top: 50%;
-   margin-top: -0.5em;
-   margin-left: -0.35em;
-}
-.card .face::before {
-   display: none;
-   content: '';
-   position: absolute;
-   top: 15.25%;
-   left: 19%;
-   width: 62%;
-   height: 70.5%;
-   background-repeat: no-repeat;
-   background-size: contain;
-}
-@media screen and (min-width: 768px) {
-   .card .face::before {
-      display: block;
-   }
-}
-.card .spade.king .face::before {
-   background-image: url('https://bfa.github.io/solitaire-js/img/face-king-spade.png');
-}
-.card .spade.queen .face::before {
-   background-image: url('https://bfa.github.io/solitaire-js/img/face-queen-spade.png');
-}
-.card .spade.jack .face::before {
-   background-image: url('https://bfa.github.io/solitaire-js/img/face-jack-spade.png');
-}
-.card .heart.king .face::before {
-   background-image: url('https://bfa.github.io/solitaire-js/img/face-king-heart.png');
-}
-.card .heart.queen .face::before {
-   background-image: url('https://bfa.github.io/solitaire-js/img/face-queen-heart.png');
-}
-.card .heart.jack .face::before {
-   background-image: url('https://bfa.github.io/solitaire-js/img/face-jack-heart.png');
-}
-.card .diamond.king .face::before {
-   background-image: url('https://bfa.github.io/solitaire-js/img/face-king-diamond.png');
-}
-.card .diamond.queen .face::before {
-   background-image: url('https://bfa.github.io/solitaire-js/img/face-queen-diamond.png');
-}
-.card .diamond.jack .face::before {
-   background-image: url('https://bfa.github.io/solitaire-js/img/face-jack-diamond.png');
-}
-.card .club.king .face::before {
-   background-image: url('https://bfa.github.io/solitaire-js/img/face-king-club.png');
-}
-.card .club.queen .face::before {
-   background-image: url('https://bfa.github.io/solitaire-js/img/face-queen-club.png');
-}
-.card .club.jack .face::before {
-   background-image: url('https://bfa.github.io/solitaire-js/img/face-jack-club.png');
-}
-.card .suit.top_center {
-   left: 50%;
-   top: 0;
-   margin-left: -0.35em;
-   margin-top: 0.65em;
-}
-.card .suit.top_left {
-   left: 0;
-   top: 0;
-   margin-left: 0.65em;
-   margin-top: 0.65em;
-}
-.card .suit.top_right {
-   right: 0;
-   top: 0;
-   margin-right: 0.65em;
-   margin-top: 0.65em;
-}
-.card .suit.middle_center {
-   left: 50%;
-   top: 50%;
-   margin-left: -0.35em;
-   margin-top: -0.5em;
-}
-.card .suit.middle_top {
-   left: 50%;
-   top: 0;
-   margin-left: -0.35em;
-   margin-top: 1.25em;
-}
-.card .suit.middle_bottom {
-   bottom: 0;
-   left: 50%;
-   margin-bottom: 0.65em;
-   margin-left: -0.35em;
-   -ms-transform: rotate(180deg);
-   -moz-transform: rotate(180deg);
-   -webkit-transform: rotate(180deg);
-   transform: rotate(180deg);
-}
-.card .suit.middle_left {
-   left: 0;
-   top: 50%;
-   margin-left: 0.65em;
-   margin-top: -0.5em;
-}
-.card .suit.middle_right {
-   right: 0;
-   top: 50%;
-   margin-right: 0.65em;
-   margin-top: -0.5em;
-}
-.card .suit.middle_top_center {
-   left: 50%;
-   top: 50%;
-   margin-left: -0.35em;
-   margin-top: -1.35em;
-}
-.card .suit.middle_top_left {
-   left: 0;
-   top: 50%;
-   margin-left: 0.65em;
-   margin-top: -1em;
-}
-.card .suit.middle_top_right {
-   right: 0;
-   top: 50%;
-   margin-right: 0.65em;
-   margin-top: -1em;
-}
-.card .suit.middle_bottom_left {
-   bottom: 50%;
-   left: 0;
-   margin-left: 0.65em;
-   margin-bottom: -1em;
-   -ms-transform: rotate(180deg);
-   -moz-transform: rotate(180deg);
-   -webkit-transform: rotate(180deg);
-   transform: rotate(180deg);
-}
-.card .suit.middle_bottom_right {
-   bottom: 50%;
-   right: 0;
-   margin-bottom: -1em;
-   margin-right: 0.65em;
-   -ms-transform: rotate(180deg);
-   -moz-transform: rotate(180deg);
-   -webkit-transform: rotate(180deg);
-   transform: rotate(180deg);
-}
-.card .suit.middle_bottom_center {
-   bottom: 50%;
-   left: 50%;
-   margin-bottom: -1.35em;
-   margin-left: -0.35em;
-   -ms-transform: rotate(180deg);
-   -moz-transform: rotate(180deg);
-   -webkit-transform: rotate(180deg);
-   transform: rotate(180deg);
-}
-.card .suit.bottom_center {
-   bottom: 0;
-   left: 50%;
-   margin-bottom: 0.65em;
-   margin-left: -0.35em;
-   -ms-transform: rotate(180deg);
-   -moz-transform: rotate(180deg);
-   -webkit-transform: rotate(180deg);
-   transform: rotate(180deg);
-}
-.card .suit.bottom_left {
-   bottom: 0;
-   left: 0;
-   margin-bottom: 0.65em;
-   margin-left: 0.65em;
-   -ms-transform: rotate(180deg);
-   -moz-transform: rotate(180deg);
-   -webkit-transform: rotate(180deg);
-   transform: rotate(180deg);
-}
-.card .suit.bottom_right {
-   bottom: 0;
-   right: 0;
-   margin-bottom: 0.65em;
-   margin-right: 0.65em;
-   -ms-transform: rotate(180deg);
-   -moz-transform: rotate(180deg);
-   -webkit-transform: rotate(180deg);
-   transform: rotate(180deg);
-}
-.card:nth-child(1),
-.card:nth-child(2),
-.card:nth-child(3),
-.card:nth-child(4),
-.card:nth-child(5) {
-   box-shadow: 0 0 5px rgba(0,0,0,.25), 0 2px 1px rgba(0,0,0,.5);
-   z-index: 1;
-}
-.card:nth-child(1) { top: 0; z-index: 5; }
-.card:nth-child(2) { top: 2px; z-index: 4; }
-.card:nth-child(3) { top: 4px; z-index: 3; }
-.card:nth-child(4) { top: 6px; z-index: 2; }
-.card:nth-child(5) { top: 8px; z-index: 1; }
+/* HUD */
+#hud{flex:0 0 auto;height:48px;display:flex;align-items:center;gap:6px;padding:0 max(8px,env(safe-area-inset-right)) 0 max(8px,env(safe-area-inset-left));
+  background:rgba(0,0,0,.28);box-shadow:0 1px 0 rgba(255,255,255,.06)}
+.stats{display:flex;gap:4px;flex:1 1 auto;min-width:0}
+.stat{display:flex;flex-direction:column;justify-content:center;min-width:58px;padding:0 6px;line-height:1.05}
+.stat small{font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.7}
+.stat b{font-size:18px;font-variant-numeric:tabular-nums;font-weight:700}
+.btns{display:flex;gap:4px;flex:0 0 auto}
+.ib{width:44px;height:40px;border:0;border-radius:10px;background:rgba(255,255,255,.1);display:grid;place-items:center;cursor:pointer;padding:0}
+.ib:hover{background:rgba(255,255,255,.2)}
+.ib:disabled{opacity:.35;cursor:default}
+.ib svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.ib .fillw{fill:#fff;stroke:none}
+.title{font-weight:800;letter-spacing:.02em;font-size:18px;margin-right:12px;white-space:nowrap;opacity:.95}
+@media (max-width:640px){.title{display:none}}
+@media (max-width:380px){.stat{min-width:50px;padding:0 3px}.stat b{font-size:16px}.ib{width:40px}}
+body.short #hud{height:44px}
 
-/* stock */
-   .stock {
-      z-index: 1;
-   }
-   .stock .reload-icon {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      font-size: 3vw;
-      font-weight: bold;
-      line-height: 1;
-      opacity: 0.25;
-      z-index: 1;
-   }
-   @media screen and (max-width: 767px) {
-      .stock .reload-icon {
-         font-size: 5vw;
-      }
-   }
-   .stock .reload-icon span {
-      display: block;
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: 100%;
-      text-align: center;
-      padding: 0.25em;
-      margin-top: -0.75em;
-      pointer-events: none;
-   }
-   .stock .reload-icon span::before,
-   .stock .reload-icon span::after {
-      content: '';
-      display: inline-block;
-      border-style: solid;
-   }
-   .stock .reload-icon span::before {
-      width: 1.25em;
-      height: 1.25em;
-      border-color: transparent black black black;
-      border-radius: 50%;
-      border-width: .125em;
-      -webkit-transform: rotate(45deg);
-      transform: rotate(45deg);
-   }
-   .stock .reload-icon span::after {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-color: transparent transparent transparent black;
-      border-width: .3125em 0 .3125em .5em;
-   }
+/* Board */
+#board{position:relative;flex:1 1 auto;overflow:hidden;touch-action:none}
+.slot{position:absolute;left:0;top:0;border-radius:calc(var(--cw)*.09);border:2px solid rgba(255,255,255,.16);background:rgba(0,0,0,.12)}
+.slot svg{position:absolute;left:25%;top:28%;width:50%;height:44%;opacity:.22;fill:#000}
+.slot.stock{cursor:pointer}
+.slot.stock svg{fill:none;stroke:#fff;stroke-width:9;stroke-linecap:round;opacity:.45}
+.slot.hot{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,210,63,.35)}
 
+.card{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);border-radius:calc(var(--cw)*.09);
+  transition:transform .2s ease;will-change:transform;cursor:pointer;
+  box-shadow:0 1px 2px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.25)}
+.card .f{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(160deg,#fff 0%,#f5f3ee 100%);overflow:hidden}
+.card.r{color:var(--red)}
+.card.k{color:var(--black)}
+.ix{position:absolute;left:7%;top:3.5%;display:flex;align-items:center;font-weight:800;font-size:calc(var(--cw)*.33);line-height:1;letter-spacing:-.05em}
+.ix svg{width:.72em;height:.72em;margin-left:.06em;fill:currentColor}
+.ix2{left:auto;top:auto;right:7%;bottom:3.5%;transform:rotate(180deg);display:none}
+.big .ix2{display:flex}
+.pip{position:absolute;left:24%;width:52%;top:36%;height:44%;fill:currentColor}
+.ace .pip{left:20%;width:60%;top:32%;height:50%}
+.fc{position:absolute;left:16%;right:16%;top:31%;bottom:9%;border:1.5px solid currentColor;border-radius:calc(var(--cw)*.05);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:.95;
+  background:repeating-linear-gradient(45deg,rgba(0,0,0,.035) 0 3px,transparent 3px 6px)}
+.fc b{font-family:Georgia,"Times New Roman",serif;font-size:calc(var(--cw)*.38);line-height:1}
+.fc svg{width:calc(var(--cw)*.22);height:calc(var(--cw)*.22);fill:currentColor;margin-top:4%}
+.big .ix{font-size:calc(var(--cw)*.29)}
+.big .ix:not(.ix2){top:3%}
+.big .pip{top:31%;height:40%}
+.big .fc{top:30%;bottom:27%}
+.big .ace .pip{top:27%;height:50%}
+.card.down .f{display:none}
+.card.down{cursor:default;border:calc(var(--cw)*.05) solid #f6f6f2;
+  background:repeating-linear-gradient(45deg,rgba(255,255,255,.13) 0 2px,transparent 2px 7px),
+  repeating-linear-gradient(-45deg,rgba(255,255,255,.13) 0 2px,transparent 2px 7px),
+  radial-gradient(circle at 50% 50%,#2c63c4,#173e86)}
+.card.stockc{cursor:pointer}
+.card.drag{transition:none!important;box-shadow:0 10px 24px rgba(0,0,0,.45),0 0 0 .5px rgba(0,0,0,.25)}
+.card.hint{box-shadow:0 0 0 3px var(--gold),0 2px 6px rgba(0,0,0,.4)}
+.noanim .card{transition:none!important}
+.card.shake{animation:shake .3s}
+@keyframes shake{0%,100%{margin-left:0}25%{margin-left:-5px}75%{margin-left:5px}}
 
-/* waste */
-   .waste {
-      z-index: 1;
-   }
+#auto{position:absolute;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:900;display:none;
+  height:48px;padding:0 26px;border:0;border-radius:24px;background:var(--gold);color:#3a2a00;font-weight:800;font-size:17px;cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,.4)}
+#auto.on{display:block}
 
-/* foundation */
-   .fnd .pile {
-      left: 43.5%;
-   }
-   .fnd .pile::before {
-      content '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: 100%;
-      color: #000;
-      font-family: 'Suit-Regular', sans-serif;
-      font-size: 10vw;
-      margin-top: -0.6em;
-      line-height: 1;
-      text-align: center;
-      opacity: 0.25;
-   }
-   @media screen and (min-width: 768px) {
-      .fnd .pile::before {
-         font-size: 6em;
-      }
-   }
-   @media screen and (min-width: 992px) {
-      .fnd .pile::before {
-         font-size: 7em;
-      }
-   }
-   @media screen and (min-width: 1200px) {
-      .fnd .pile::before {
-         font-size: 8em;
-      }
-   }
-   .fnd .pile.spades::before { content: '♠' }
-   .fnd .pile.hearts::before { content: '♥' }
-   .fnd .pile.diamonds::before { content: '♦' }
-   .fnd .pile.clubs::before { content: '♣' }
-
-/* tableau */
-   .tab .card {
-      box-shadow: 0 0 5px rgba(0,0,0,.5);
-      z-index: 1;
-      margin-bottom: 10em;
-   }
-   /* face up */
-   .tab .card:nth-child(2) { top: 6em; left: 0; }
-   .tab .card:nth-child(3) { top: 12em; left: 0; }
-   .tab .card:nth-child(4) { top: 18em; left: 0; }
-   .tab .card:nth-child(5) { top: 24em; left: 0; }
-   .tab .card:nth-child(6) { top: 30em; left: 0; }
-   .tab .card:nth-child(7) { top: 36em;  left: 0; }
-   .tab .card:nth-child(8) { top: 42em;  left: 0; }
-   .tab .card:nth-child(9) { top: 48em;  left: 0; }
-   .tab .card:nth-child(10) { top: 54em;  left: 0; }
-   .tab .card:nth-child(11) { top: 60em;  left: 0; }
-   .tab .card:nth-child(12) { top: 66em;  left: 0; }
-   .tab .card:nth-child(13) { top: 72em;  left: 0; }
-   .tab .card:nth-child(14) { top: 78em;  left: 0; }
-   .tab .card:nth-child(15) { top: 84em;  left: 0; }
-   .tab .card:nth-child(16) { top: 90em;  left: 0; }
-   .tab .card:nth-child(17) { top: 96em;  left: 0; }
-   .tab .card:nth-child(18) { top: 102em;  left: 0; }
-   .tab .card:nth-child(19) { top: 108em;  left: 0; }
-   .tab .card:nth-child(20) { top: 114em;  left: 0; }
-   .tab .card:nth-child(21) { top: 120em;  left: 0; }
-   /* face down */
-   .tab .pile[data-unplayed='1'] .card:nth-child(2),
-   .tab .pile[data-unplayed='2'] .card:nth-child(2),
-   .tab .pile[data-unplayed='3'] .card:nth-child(2),
-   .tab .pile[data-unplayed='4'] .card:nth-child(2),
-   .tab .pile[data-unplayed='5'] .card:nth-child(2),
-   .tab .pile[data-unplayed='6'] .card:nth-child(2) { top: 3em; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(3),
-   .tab .pile[data-unplayed='3'] .card:nth-child(3),
-   .tab .pile[data-unplayed='4'] .card:nth-child(3),
-   .tab .pile[data-unplayed='5'] .card:nth-child(3),
-   .tab .pile[data-unplayed='6'] .card:nth-child(3) { top: 6em; }
-   .tab .pile[data-unplayed='3'] .card:nth-child(4),
-   .tab .pile[data-unplayed='4'] .card:nth-child(4),
-   .tab .pile[data-unplayed='5'] .card:nth-child(4),
-   .tab .pile[data-unplayed='6'] .card:nth-child(4) { top: 9em; }
-   .tab .pile[data-unplayed='4'] .card:nth-child(5),
-   .tab .pile[data-unplayed='5'] .card:nth-child(5),
-   .tab .pile[data-unplayed='6'] .card:nth-child(5) { top: 12em; }
-   .tab .pile[data-unplayed='5'] .card:nth-child(6),
-   .tab .pile[data-unplayed='6'] .card:nth-child(6) { top: 15em; }
-   .tab .pile[data-unplayed='6'] .card:nth-child(7) { top: 18em; }
-   /* piles with odd # of face down cards */
-   .tab .pile[data-unplayed='1'] .card:nth-child(3) { top: 9em; left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(4),
-   .tab .pile[data-unplayed='3'] .card:nth-child(5) { top: 15em; left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(5),
-   .tab .pile[data-unplayed='3'] .card:nth-child(6),
-   .tab .pile[data-unplayed='5'] .card:nth-child(7) { top: 21em; left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(6),
-   .tab .pile[data-unplayed='3'] .card:nth-child(7),
-   .tab .pile[data-unplayed='5'] .card:nth-child(8) { top: 27em; left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(7),
-   .tab .pile[data-unplayed='3'] .card:nth-child(8),
-   .tab .pile[data-unplayed='5'] .card:nth-child(9) { top: 33em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(8),
-   .tab .pile[data-unplayed='3'] .card:nth-child(9),
-   .tab .pile[data-unplayed='5'] .card:nth-child(10) { top: 39em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(9),
-   .tab .pile[data-unplayed='3'] .card:nth-child(10),
-   .tab .pile[data-unplayed='5'] .card:nth-child(11) { top: 45em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(10),
-   .tab .pile[data-unplayed='3'] .card:nth-child(11),
-   .tab .pile[data-unplayed='5'] .card:nth-child(12) { top: 51em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(11),
-   .tab .pile[data-unplayed='3'] .card:nth-child(12),
-   .tab .pile[data-unplayed='5'] .card:nth-child(13) { top: 57em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(12),
-   .tab .pile[data-unplayed='3'] .card:nth-child(13),
-   .tab .pile[data-unplayed='5'] .card:nth-child(14) { top: 63em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(13),
-   .tab .pile[data-unplayed='3'] .card:nth-child(14),
-   .tab .pile[data-unplayed='5'] .card:nth-child(15) { top: 69em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(14),
-   .tab .pile[data-unplayed='3'] .card:nth-child(15),
-   .tab .pile[data-unplayed='5'] .card:nth-child(16) { top: 75em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(15),
-   .tab .pile[data-unplayed='3'] .card:nth-child(16),
-   .tab .pile[data-unplayed='5'] .card:nth-child(17) { top: 81em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(16),
-   .tab .pile[data-unplayed='3'] .card:nth-child(17),
-   .tab .pile[data-unplayed='5'] .card:nth-child(18) { top: 87em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(17),
-   .tab .pile[data-unplayed='3'] .card:nth-child(18),
-   .tab .pile[data-unplayed='5'] .card:nth-child(19) { top: 93em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(18),
-   .tab .pile[data-unplayed='3'] .card:nth-child(19),
-   .tab .pile[data-unplayed='5'] .card:nth-child(20) { top: 99em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(19),
-   .tab .pile[data-unplayed='3'] .card:nth-child(20),
-   .tab .pile[data-unplayed='5'] .card:nth-child(21) { top: 105em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(20),
-   .tab .pile[data-unplayed='3'] .card:nth-child(21) { top: 111em;  left: 0; }
-   .tab .pile[data-unplayed='1'] .card:nth-child(21) { top: 117em;  left: 0; }
-   /* piles with even # of face down cards */
-   .tab .pile[data-unplayed='2'] .card:nth-child(4) { top: 12em; left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(5),
-   .tab .pile[data-unplayed='4'] .card:nth-child(6) { top: 18em; left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(6),
-   .tab .pile[data-unplayed='4'] .card:nth-child(7),
-   .tab .pile[data-unplayed='6'] .card:nth-child(8) { top: 24em; left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(7),
-   .tab .pile[data-unplayed='4'] .card:nth-child(8),
-   .tab .pile[data-unplayed='6'] .card:nth-child(9) { top: 30em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(8),
-   .tab .pile[data-unplayed='4'] .card:nth-child(9),
-   .tab .pile[data-unplayed='6'] .card:nth-child(10) { top: 36em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(9),
-   .tab .pile[data-unplayed='4'] .card:nth-child(10),
-   .tab .pile[data-unplayed='6'] .card:nth-child(11) { top: 42em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(10),
-   .tab .pile[data-unplayed='4'] .card:nth-child(11),
-   .tab .pile[data-unplayed='6'] .card:nth-child(12) { top: 48em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(11),
-   .tab .pile[data-unplayed='4'] .card:nth-child(12),
-   .tab .pile[data-unplayed='6'] .card:nth-child(13) { top: 54em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(12),
-   .tab .pile[data-unplayed='4'] .card:nth-child(13),
-   .tab .pile[data-unplayed='6'] .card:nth-child(14) { top: 60em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(13),
-   .tab .pile[data-unplayed='4'] .card:nth-child(14),
-   .tab .pile[data-unplayed='6'] .card:nth-child(15) { top: 66em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(14),
-   .tab .pile[data-unplayed='4'] .card:nth-child(15),
-   .tab .pile[data-unplayed='6'] .card:nth-child(16) { top: 72em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(15),
-   .tab .pile[data-unplayed='4'] .card:nth-child(16),
-   .tab .pile[data-unplayed='6'] .card:nth-child(17) { top: 78em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(16),
-   .tab .pile[data-unplayed='4'] .card:nth-child(17),
-   .tab .pile[data-unplayed='6'] .card:nth-child(18) { top: 84em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(17),
-   .tab .pile[data-unplayed='4'] .card:nth-child(18),
-   .tab .pile[data-unplayed='6'] .card:nth-child(19) { top: 90em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(18),
-   .tab .pile[data-unplayed='4'] .card:nth-child(19),
-   .tab .pile[data-unplayed='6'] .card:nth-child(20) { top: 96em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(19),
-   .tab .pile[data-unplayed='4'] .card:nth-child(20),
-   .tab .pile[data-unplayed='6'] .card:nth-child(21) { top: 102em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(20),
-   .tab .pile[data-unplayed='4'] .card:nth-child(21) { top: 108em;  left: 0; }
-   .tab .pile[data-unplayed='2'] .card:nth-child(21) { top: 114em;  left: 0; }
-   /* Confetti */
-   #confetti {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 10000;
-      pointer-events: none;
-      opacity: 0;
-   }
-   /* Disable Grammarly */
-   grammarly-card {
-       display: none;
-   }
+/* Overlays */
+.ov{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,30,15,.6);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.ov.on{display:flex}
+.panel{position:relative;z-index:1;background:#fbfaf6;color:#1b2a20;border-radius:18px;padding:22px 22px 18px;width:min(360px,100%);text-align:center;
+  box-shadow:0 20px 50px rgba(0,0,0,.45);max-height:100%;overflow:auto}
+.panel h2{margin:0 0 6px;font-size:26px}
+.panel p{margin:0 0 14px;font-size:16px;color:#3b4a40}
+.rows{margin:6px 0 16px;text-align:left}
+.rows div{display:flex;justify-content:space-between;padding:7px 4px;border-bottom:1px solid #e6e2d8;font-size:16px}
+.rows b{font-variant-numeric:tabular-nums}
+.rows .new{color:#0f7a3c;font-weight:800}
+.pb{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{min-height:46px;min-width:120px;padding:0 18px;border:0;border-radius:12px;font-weight:700;font-size:16px;cursor:pointer;background:#15803d;color:#fff}
+.btn.sec{background:#e5e1d6;color:#1b2a20}
+#confetti{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:none}
+@media (max-height:420px){.panel{padding:14px 18px 12px}.panel h2{font-size:22px}.rows div{padding:4px 4px}.rows{margin:4px 0 10px}}
 </style>
-
-
-
 </head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="s0" viewBox="0 0 100 100"><path d="M50 3C40 22 7 40 7 62c0 14 11 23 23 23 8 0 14-4 16-9-1 9-5 16-13 20h34c-8-4-12-11-13-20 2 5 8 9 16 9 12 0 23-9 23-23C93 40 60 22 50 3z"/></symbol>
+    <symbol id="s1" viewBox="0 0 100 100"><path d="M50 92C20 67 4 50 4 31 4 16 16 6 29 6c10 0 17 6 21 14 4-8 11-14 21-14 13 0 25 10 25 25 0 19-16 36-46 61z"/></symbol>
+    <symbol id="s2" viewBox="0 0 100 100"><path d="M50 2l38 48-38 48-38-48z"/></symbol>
+    <symbol id="s3" viewBox="0 0 100 100"><circle cx="50" cy="27" r="20"/><circle cx="27" cy="60" r="20"/><circle cx="73" cy="60" r="20"/><path d="M40 40h20v24H40zM46 62c0 16-5 27-13 34h34c-8-7-13-18-13-34z"/></symbol>
+  </defs>
+</svg>
+<div id="app">
+  <header id="hud">
+    <div class="title">Classic Solitaire</div>
+    <div class="stats">
+      <div class="stat"><small>Time</small><b id="tTime">0:00</b></div>
+      <div class="stat"><small>Moves</small><b id="tMoves">0</b></div>
+      <div class="stat"><small>Score</small><b id="tScore">0</b></div>
+    </div>
+    <div class="btns">
+      <button class="ib" id="bUndo" aria-label="Undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button>
+      <button class="ib" id="bPause" aria-label="Pause" title="Pause (P)"><svg viewBox="0 0 24 24"><rect class="fillw" x="6" y="5" width="4" height="14" rx="1"/><rect class="fillw" x="14" y="5" width="4" height="14" rx="1"/></svg></button>
+      <button class="ib" id="bNew" aria-label="New game" title="New game (N)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+  </header>
+  <main id="board">
+    <button id="auto">Auto Finish</button>
+  </main>
+</div>
 
-<body translate="no">
-  <div class="container">
+<div class="ov" id="ovPause"><div class="panel"><h2>Paused</h2><p>The clock is stopped.</p><div class="pb"><button class="btn" id="bResume">Resume</button></div></div></div>
+<div class="ov" id="ovNew"><div class="panel"><h2>New game?</h2><p>Your current game will be lost.</p><div class="pb"><button class="btn sec" id="bCancel">Cancel</button><button class="btn" id="bConfirm">Deal again</button></div></div></div>
+<div class="ov" id="ovWin"><canvas id="confetti"></canvas><div class="panel"><h2>You win!</h2><p>All four foundations are complete.</p><div class="rows" id="winRows"></div><div class="pb"><button class="btn" id="bAgain">Play again</button></div></div></div>
 
-      <div id="score">
-         <div class="timer">
-            <button id="play-pause">
-               <i id="play">Play</i>
-               <i id="pause">Pause</i>
-            </button>
-            <label>Timer:</label>
-            <span>00:00</span>
-         </div>
-         <div class="move-count" data-moves="0">
-            <label>Moves:</label>
-            <span>0</span>
-         </div>
-         <div class="score" data-score="0">
-            <label>Score:</label>
-            <span>0</span>
-         </div>
-      </div>
+<script>
+(function () {
+  'use strict';
+  var KEY_GAME = 'solitario:game', KEY_STATS = 'solitario:stats';
+  var RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+  var FACE = { 11: 'J', 12: 'Q', 13: 'K' };
+  var $ = function (id) { return document.getElementById(id); };
+  var board = $('board'), autoBtn = $('auto');
 
-      <div id="table">
+  function suit(c) { return (c / 13) | 0; }
+  function rank(c) { return c % 13 + 1; }
+  function isRed(c) { var s = suit(c); return s === 1 || s === 2; }
 
-         <div class="upper-row">
-            <div id="stock" class="stock pile" data-pile="stock">
-               <i class="reload-icon" data-action="reload">
-                  <span></span>
-               </i>
-               <ul></ul>
-            </div>
+  // ---------- storage ----------
+  function load(k) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+  function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  var stats = load(KEY_STATS) || { played: 0, won: 0, best: 0, bestTime: 0 };
 
-            <div id="waste" class="waste pile" data-pile="waste">
-               <ul></ul>
-            </div>
+  // ---------- state ----------
+  var S, hist = [], paused = false, timerId = 0, autoRunning = false;
 
-            <ul id="fnd" class="fnd">
-               <li id="spades" class="spades pile" data-pile="spades" data-empty="true"><ul></ul></li>
-               <li id="hearts" class="hearts pile" data-pile="hearts" data-empty="true"><ul></ul></li>
-               <li id="diamonds" class="diamonds pile" data-pile="diamonds" data-empty="true"><ul></ul></li>
-               <li id="clubs" class="clubs pile" data-pile="clubs" data-empty="true"><ul></ul></li>
-            </ul>
-         </div>
-
-         <div class="lower-row">
-            <ul id="tab" class="tab">
-               <li class="pile" data-pile="1"><ul></ul></li>
-               <li class="pile" data-pile="2"><ul></ul></li>
-               <li class="pile" data-pile="3"><ul></ul></li>
-               <li class="pile" data-pile="4"><ul></ul></li>
-               <li class="pile" data-pile="5"><ul></ul></li>
-               <li class="pile" data-pile="6"><ul></ul></li>
-               <li class="pile" data-pile="7"><ul></ul></li>
-            </ul>
-         </div>
-
-      </div>
-
-   </div><!-- /.container -->
-
-   <button id="auto-win">Auto Win</button>
-
-   <canvas id="confetti"></canvas>
-
-   <ul class="template">
-      <li data-rank="2">
-         <div class="two {{suit}}">
-            <div class="corner top">
-               <span class="rank">2</span>
-               <span class="suit"></span>
-            </div>
-            <span class="suit top_center"></span>
-            <span class="suit bottom_center"></span>
-            <div class="corner bottom">
-               <span class="rank">2</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-      <li data-rank="3">
-         <div class="three {{suit}}">
-            <div class="corner top">
-               <span class="rank">3</span>
-               <span class="suit"></span>
-            </div>
-            <span class="suit top_center"></span>
-            <span class="suit middle_center"></span>
-            <span class="suit bottom_center"></span>
-            <div class="corner bottom">
-               <span class="rank">3</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-      <li data-rank="4">
-         <div class="four {{suit}}">
-            <div class="corner top">
-               <span class="rank">4</span>
-               <span class="suit"></span>
-            </div>
-            <span class="suit top_left"></span>
-            <span class="suit top_right"></span>
-            <span class="suit bottom_left"></span>
-            <span class="suit bottom_right"></span>
-            <div class="corner bottom">
-               <span class="rank">4</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-      <li data-rank="5">
-         <div class="five {{suit}}">
-            <div class="corner top">
-               <span class="rank">5</span>
-               <span class="suit"></span>
-            </div>
-            <span class="suit top_left"></span>
-            <span class="suit top_right"></span>
-            <span class="suit middle_center"></span>
-            <span class="suit bottom_left"></span>
-            <span class="suit bottom_right"></span>
-            <div class="corner bottom">
-               <span class="rank">5</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-      <li data-rank="6">
-         <div class="six {{suit}}">
-            <div class="corner top">
-               <span class="rank">6</span>
-               <span class="suit"></span>
-            </div>
-            <span class="suit top_left"></span>
-            <span class="suit top_right"></span>
-            <span class="suit middle_left"></span>
-            <span class="suit middle_right"></span>
-            <span class="suit bottom_left"></span>
-            <span class="suit bottom_right"></span>
-            <div class="corner bottom">
-               <span class="rank">6</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-      <li data-rank="7">
-         <div class="seven {{suit}}">
-            <div class="corner top">
-               <span class="rank">7</span>
-               <span class="suit"></span>
-            </div>
-            <span class="suit top_left"></span>
-            <span class="suit top_right"></span>
-            <span class="suit middle_left"></span>
-            <span class="suit middle_top"></span>
-            <span class="suit middle_right"></span>
-            <span class="suit bottom_left"></span>
-            <span class="suit bottom_right"></span>
-            <div class="corner bottom">
-               <span class="rank">7</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-      <li data-rank="8">
-         <div class="eight {{suit}}">
-            <div class="corner top">
-               <span class="rank">8</span>
-               <span class="suit"></span>
-            </div>
-            <span class="suit top_left"></span>
-            <span class="suit top_right"></span>
-            <span class="suit middle_left"></span>
-            <span class="suit middle_top_center"></span>
-            <span class="suit middle_right"></span>
-            <span class="suit middle_bottom_center"></span>
-            <span class="suit bottom_left"></span>
-            <span class="suit bottom_right"></span>
-            <div class="corner bottom">
-               <span class="rank">8</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-      <li data-rank="9">
-         <div class="nine {{suit}}">
-            <div class="corner top">
-               <span class="rank">9</span>
-               <span class="suit"></span>
-            </div>
-            <span class="suit top_left"></span>
-            <span class="suit top_right"></span>
-            <span class="suit middle_top_left"></span>
-            <span class="suit middle_center"></span>
-            <span class="suit middle_top_right"></span>
-            <span class="suit bottom_left"></span>
-            <span class="suit bottom_right"></span>
-            <span class="suit middle_bottom_left"></span>
-            <span class="suit middle_bottom_right"></span>
-            <div class="corner bottom">
-               <span class="rank">9</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-      <li data-rank="10">
-         <div class="ten {{suit}}">
-            <div class="corner top">
-               <span class="rank">10</span>
-               <span class="suit"></span>
-            </div>
-            <span class="suit top_left"></span>
-            <span class="suit top_right"></span>
-            <span class="suit middle_top_left"></span>
-            <span class="suit middle_top_center"></span>
-            <span class="suit middle_top_right"></span>
-            <span class="suit bottom_left"></span>
-            <span class="suit bottom_right"></span>
-            <span class="suit middle_bottom_center"></span>
-            <span class="suit middle_bottom_left"></span>
-            <span class="suit middle_bottom_right"></span>
-            <div class="corner bottom">
-               <span class="rank">10</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-      <li data-rank="J">
-         <div class="jack {{suit}}">
-            <div class="corner top">
-               <span class="rank">J</span>
-               <span class="suit"></span>
-            </div>
-            <span class="face middle_center"></span>
-            <div class="corner bottom">
-               <span class="rank">J</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-      <li data-rank="Q">
-         <div class="queen {{suit}}">
-            <div class="corner top">
-               <span class="rank">Q</span>
-               <span class="suit"></span>
-            </div>
-            <span class="face middle_center"></span>
-            <div class="corner bottom">
-               <span class="rank">Q</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-      <li data-rank="K">
-         <div class="king {{suit}}">
-            <div class="corner top">
-               <span class="rank">K</span>
-               <span class="suit"></span>
-            </div>
-            <span class="face middle_center"></span>
-            <div class="corner bottom">
-               <span class="rank">K</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-      <li data-rank="A">
-         <div class="ace {{suit}}">
-            <div class="corner top">
-               <span class="rank">A</span>
-               <span class="suit"></span>
-            </div>
-            <span class="suit middle_center"></span>
-            <div class="corner bottom">
-               <span class="rank">A</span>
-               <span class="suit"></span>
-            </div>
-         </div>
-      </li>
-   </ul><!-- /.templates -->
-
-
-      <script id="rendered-js">
-/* ### TODO ###
-- Refactor code :) Always
-
-Optional Features:
-- HTML Drag & Drop API
-- Limit How Many Times Stock Can Be Reloaded (3x)
-- 3 Card Draw
-- High score
-- Options panel for user
-- Sound Fx
-
-*/
-
-// 0. DECLARE VARS
-
-// document
-var d = document;
-
-// build deck
-var deck = [];
-
-// build suits
-var suits = [];
-suits['spades'] = [
-// spades
-['A', 'spade'],
-['2', 'spade'],
-['3', 'spade'],
-['4', 'spade'],
-['5', 'spade'],
-['6', 'spade'],
-['7', 'spade'],
-['8', 'spade'],
-['9', 'spade'],
-['10', 'spade'],
-['J', 'spade'],
-['Q', 'spade'],
-['K', 'spade']];
-
-suits['hearts'] = [
-// hearts
-['A', 'heart'],
-['2', 'heart'],
-['3', 'heart'],
-['4', 'heart'],
-['5', 'heart'],
-['6', 'heart'],
-['7', 'heart'],
-['8', 'heart'],
-['9', 'heart'],
-['10', 'heart'],
-['J', 'heart'],
-['Q', 'heart'],
-['K', 'heart']];
-
-suits['diamonds'] = [
-// diamonds
-['A', 'diamond'],
-['2', 'diamond'],
-['3', 'diamond'],
-['4', 'diamond'],
-['5', 'diamond'],
-['6', 'diamond'],
-['7', 'diamond'],
-['8', 'diamond'],
-['9', 'diamond'],
-['10', 'diamond'],
-['J', 'diamond'],
-['Q', 'diamond'],
-['K', 'diamond']];
-
-suits['clubs'] = [
-// clubs
-['A', 'club'],
-['2', 'club'],
-['3', 'club'],
-['4', 'club'],
-['5', 'club'],
-['6', 'club'],
-['7', 'club'],
-['8', 'club'],
-['9', 'club'],
-['10', 'club'],
-['J', 'club'],
-['Q', 'club'],
-['K', 'club']];
-
-
-// build stock pile
-var s = [];
-
-// build waste pile
-var w = [];
-
-// build foundations
-var spades = [];
-var hearts = [];
-var diamonds = [];
-var clubs = [];
-
-// build tableau
-var t = [];
-t[1] = t[2] = t[3] = t[4] = t[5] = t[6] = t[7] = [];
-
-// build table
-var table = [];
-table['stock'] = s;
-table['waste'] = w;
-table['spades'] = spades;
-table['hearts'] = hearts;
-table['diamonds'] = diamonds;
-table['clubs'] = clubs;
-table['tab'] = t;
-
-// initial face up cards
-var playedCards =
-'#waste .card,' +
-'#fnd .card,' +
-'#tab .card:last-child';
-
-// cache selectors
-var $timer = d.querySelector('#score .timer');
-var $timerSpan = d.querySelector('#score .timer span');
-var $moveCount = d.querySelector('#score .move-count');
-var $moveCountSpan = d.querySelector('#score .move-count span');
-var $score = d.querySelector('#score .score');
-var $scoreSpan = d.querySelector('#score .score span');
-var $playPause = d.querySelector('#play-pause');
-var $table = d.querySelector('#table');
-var $upper = d.querySelector('#table .upper-row');
-var $lower = d.querySelector('#table .lower-row');
-var $stock = d.querySelector('#stock');
-var $waste = d.querySelector('#waste');
-var $fnd = d.querySelector('#fnd');
-var $tab = d.querySelector('#tab');
-var $autoWin = d.querySelector('#auto-win');
-
-// other global vars
-var clock = 0;
-var time = 0;
-var moves = 0;
-var score = 0;
-var bonus = 0;
-var lastEventTime = 0;
-var unplayedTabCards = [];
-
-// 1. CREATE DECK
-deck = create(deck, suits);
-
-// 2. SHUFFLE DECK
-deck = shuffle(deck);
-
-// 3. DEAL DECK
-table = deal(deck, table);
-
-// 4. RENDER TABLE
-render(table, playedCards);
-
-// 5. START GAMEPLAY
-play(table);
-
-// ### EVENT HANDLERS ###
-window.onresize = function (event) {
-  sizeCards();
-};
-
-// ### FUNCTIONS ###
-
-// create deck
-function create(deck, suits) {
-  console.log('Creating Deck...');
-  // loop through each suit
-  for (var suit in suits) {
-    suit = suits[suit];
-    // loop through each card in suit
-    for (var card in suit) {
-      card = suit[card];
-      deck.push(card); // push card to deck
-    }
+  function fresh() {
+    var deck = [], i, j, t;
+    for (i = 0; i < 52; i++) deck.push(i);
+    for (i = deck.length - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = deck[i]; deck[i] = deck[j]; deck[j] = t; }
+    var s = { stock: [], waste: [], found: [[], [], [], []], tab: [[], [], [], [], [], [], []], up: [], score: 0, moves: 0, time: 0, won: false, counted: false };
+    for (i = 0; i < 52; i++) s.up.push(false);
+    for (var row = 0; row < 7; row++) for (var p = row; p < 7; p++) s.tab[p].push(deck.pop());
+    for (p = 0; p < 7; p++) s.up[s.tab[p][s.tab[p].length - 1]] = true;
+    s.stock = deck;
+    return s;
   }
-  return deck;
-}
-
-// shuffle deck
-function shuffle(deck) {
-  console.log('Shuffling Deck...');
-  // declare vars
-  var i = deck.length,temp,rand;
-  // while there remain elements to shuffle
-  while (0 !== i) {
-    // pick a remaining element
-    rand = Math.floor(Math.random() * i);
-    i--;
-    // and swap it with the current element
-    temp = deck[i];
-    deck[i] = deck[rand];
-    deck[rand] = temp;
+  function valid(s) {
+    if (!s || !s.tab || s.tab.length !== 7 || !s.found || s.found.length !== 4 || !s.up) return false;
+    var n = s.stock.length + s.waste.length;
+    s.found.forEach(function (f) { n += f.length; }); s.tab.forEach(function (t) { n += t.length; });
+    return n === 52;
   }
-  return deck;
-}
-
-// deal deck
-function deal(deck, table) {
-  console.log('Dealing Deck...');
-  // move all cards to stock
-  table['stock'] = deck;
-  // build tableau
-  var tabs = table['tab'];
-  // loop through 7 tableau rows
-  for (var row = 1; row <= 7; row++) {
-    // loop through 7 piles in row
-    for (var pile = row; pile <= 7; pile++) {
-      // build blank pile on first row
-      if (row === 1) tabs[pile] = [];
-      // deal card to pile
-      move(table['stock'], tabs[pile], false);
-    }
+  function save() { store(KEY_GAME, S); }
+  function snapshot() {
+    hist.push(JSON.stringify({ stock: S.stock, waste: S.waste, found: S.found, tab: S.tab, up: S.up, score: S.score }));
+    if (hist.length > 300) hist.shift();
   }
-  return table;
-}
+  function addScore(d) { S.score = Math.max(0, S.score + d); }
 
-// move card
-function move(source, dest, pop, selectedCards = 1) {
-  if (pop !== true) {
-    var card = source.shift(); // take card from bottom
-    dest.push(card); // push card to destination pile
-  } else {
-    while (selectedCards) {
-      // take card from the top of selection
-      var card = source[source.length - selectedCards];
-      // remove it from the selected pile
-      source.splice(source.length - selectedCards, 1);
-      // put it in the destination pile
-      dest.push(card);
-      // decrement
-      selectedCards--;
-    }
+  // ---------- timer ----------
+  function startTimer() {
+    if (timerId || paused || S.won) return;
+    timerId = setInterval(function () {
+      S.time++;
+      if (S.time % 10 === 0) addScore(-2);
+      hud();
+      if (S.time % 5 === 0) save();
+    }, 1000);
   }
-  return;
-}
-
-// render table
-function render(table, playedCards) {
-  console.log('Rendering Table...');
-
-  // check for played cards
-  playedCards = checkForPlayedCards(playedCards);
-
-  // check for empty piles
-  emptyPiles = checkForEmptyPiles(table);
-
-  // update stock pile
-  update(table['stock'], '#stock ul', playedCards, true);
-  // update waste pile
-  update(table['waste'], '#waste ul', playedCards);
-  // update spades pile
-  update(table['spades'], '#spades ul', playedCards);
-  // update hearts pile
-  update(table['hearts'], '#hearts ul', playedCards);
-  // update diamonds pile
-  update(table['diamonds'], '#diamonds ul', playedCards);
-  // update clubs pile
-  update(table['clubs'], '#clubs ul', playedCards);
-  // update tableau
-  var tabs = table['tab'];
-  // loop through tableau piles
-  for (var i = 1; i <= 7; i++) {
-    // update tableau pile
-    update(tabs[i], '#tab li:nth-child(' + i + ') ul', playedCards, true);
+  function stopTimer() { clearInterval(timerId); timerId = 0; }
+  function began() {
+    if (!S.counted) { S.counted = true; stats.played++; store(KEY_STATS, stats); }
+    startTimer();
   }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { stopTimer(); save(); }
+    else if (S.counted && !S.won && !paused) startTimer();
+  });
 
-  // get unplayed tab cards
-  unplayedTabCards = getUnplayedTabCards();
-
-  // size cards
-  sizeCards();
-
-  // show table
-  $table.style.opacity = '100';
-
-  console.log('Table Rendered:', table);
-  return;
-}
-
-// update piles
-function update(pile, selector, playedCards, append) {
-  var e = d.querySelector(selector);
-  var children = e.children; // get children
-  var grandParent = e.parentElement.parentElement; // get grand parent
-  // reset pile
-  e.innerHTML = '';
-  // loop through cards in pile
-  for (var card in pile) {
-    card = pile[card];
-    // get html template for card
-    var html = getTemplate(card);
-    // create card in pile
-    createCard(card, selector, html, append);
+  // ---------- rules ----------
+  function where(c) {
+    var i, j;
+    if ((i = S.stock.indexOf(c)) >= 0) return { t: 'stock', p: 0, i: i };
+    if ((i = S.waste.indexOf(c)) >= 0) return { t: 'waste', p: 0, i: i };
+    for (j = 0; j < 4; j++) if ((i = S.found[j].indexOf(c)) >= 0) return { t: 'found', p: j, i: i };
+    for (j = 0; j < 7; j++) if ((i = S.tab[j].indexOf(c)) >= 0) return { t: 'tab', p: j, i: i };
+    return null;
   }
-  // turn cards face up
-  flipCards(playedCards, 'up');
-  // count played cards
-  var played = countPlayedCards(children);
-  e.parentElement.dataset.played = played;
-  // count all played cards for #tab and #fnd piles
-  if (grandParent.id === 'tab' || grandParent.id === 'fnd') {
-    var playedAll = parseInt(grandParent.dataset.played);
-    if (isNaN(playedAll)) playedAll = 0;
-    grandParent.dataset.played = playedAll + played;
+  function pileOf(l) { return l.t === 'stock' ? S.stock : l.t === 'waste' ? S.waste : l.t === 'found' ? S.found[l.p] : S.tab[l.p]; }
+  function movable(l) {
+    var pile = pileOf(l);
+    if (l.t === 'stock') return false;
+    if (l.t === 'tab') return S.up[pile[l.i]];
+    return l.i === pile.length - 1;
   }
-  // count unplayed cards
-  var unplayed = countUnplayedCards(children);
-  e.parentElement.dataset.unplayed = unplayed;
-  // count all unplayed cards for #tab and #fnd piles
-  if (grandParent.id === 'tab' || grandParent.id === 'fnd') {
-    var unplayedAll = parseInt(grandParent.dataset.unplayed);
-    if (isNaN(unplayedAll)) unplayedAll = 0;
-    grandParent.dataset.unplayed = unplayedAll + unplayed;
+  function canFound(c, f) { return suit(c) === f && S.found[f].length === rank(c) - 1; }
+  function canTab(c, t) {
+    var pile = S.tab[t];
+    if (!pile.length) return rank(c) === 13;
+    var top = pile[pile.length - 1];
+    return S.up[top] && isRed(top) !== isRed(c) && rank(top) === rank(c) + 1;
   }
-  return pile;
-}
-
-// get html template for card
-function getTemplate(card) {
-  var r = card[0]; // get rank
-  var s = card[1]; // get suit
-  // get html template
-  var html = d.querySelector('.template li[data-rank="' + r + '"]').innerHTML;
-  // search and replace suit variable
-  html = html.replace('{{suit}}', s);
-  return html;
-}
-
-// create card in pile
-function createCard(card, selector, html, append) {
-  var r = card[0]; // get rank
-  var s = card[1]; // get suit
-  // get pile based on selector
-  if (selector.includes('#stock')) var p = 'stock';
-  if (selector.includes('#waste')) var p = 'waste';
-  if (selector.includes('#spades')) var p = 'spades';
-  if (selector.includes('#hearts')) var p = 'hearts';
-  if (selector.includes('#diamonds')) var p = 'diamonds';
-  if (selector.includes('#clubs')) var p = 'clubs';
-  if (selector.includes('#tab')) var p = 'tab';
-  var e = d.createElement('li'); // create li element
-  e.className = 'card'; // add .card class to element
-  e.dataset.rank = r; // set rank atribute
-  e.dataset.suit = s; // set suit attribute
-  e.dataset.pile = p; // set pile attribute;
-  e.dataset.selected = 'false'; // set selected attribute
-  e.innerHTML = html; // insert html to element
-  // query for pile
-  var pile = d.querySelector(selector);
-  // append to pile
-  if (append) pile.appendChild(e);
-  // or prepend to pile
-  else pile.insertBefore(e, pile.firstChild);
-  return;
-}
-
-// check for played cards
-function checkForPlayedCards(playedCards) {
-  // query
-  var els = d.querySelectorAll('.card[data-played="true"]');
-  for (var e in els) {// loop through elements
-    e = els[e];
-    if (e.nodeType) {
-      var r = e.dataset.rank;
-      var s = e.dataset.suit;
-      playedCards += ', .card[data-rank="' + r + '"][data-suit="' + s + '"]';
-    }
-  }
-  return playedCards;
-}
-
-// check for empty piles
-function checkForEmptyPiles(table) {
-  // reset empty data on all piles
-  var els = d.querySelectorAll('.pile'); // query elements
-  for (var e in els) {// loop through elements
-    e = els[e];
-    if (e.nodeType) {
-      delete e.dataset.empty;
-    }
-  }
-  // declare var with fake pile so we always have one
-  var emptyPiles = '#fake.pile';
-  // check spades pile
-  if (table['spades'].length === 0) {
-    emptyPiles += ', #fnd #spades.pile';
-  }
-  // check hearts pile
-  if (table['hearts'].length === 0) {
-    emptyPiles += ', #fnd #hearts.pile';
-  }
-  // check diamonds pile
-  if (table['diamonds'].length === 0) {
-    emptyPiles += ', #fnd #diamonds.pile';
-  }
-  // check clubs pile
-  if (table['clubs'].length === 0) {
-    emptyPiles += ', #fnd #clubs.pile';
-  }
-  // check tableau piles
-  var tabs = table['tab'];
-  // loop through tableau piles
-  for (var i = 1; i <= 7; i++) {
-    // check tabeau pile
-    if (tabs[i].length === 0) {
-      emptyPiles += ', #tab li:nth-child(' + i + ').pile';
-    }
-  }
-  // mark piles as empty
-  els = d.querySelectorAll(emptyPiles); // query elements
-  for (var e in els) {// loop through elements
-    e = els[e];
-    if (e.nodeType) {
-      e.dataset.empty = 'true'; // mark as empty
-    }
-  }
-  return emptyPiles;
-}
-
-// count played cards
-function countPlayedCards(cards) {
-  var played = 0;
-  // loop through cards
-  for (var card in cards) {
-    card = cards[card];
-    if (card.nodeType) {
-      // check if card has been played
-      if (card.dataset.played === 'true') played++;
-    }
-  }
-  return played;
-}
-
-// count unplayed cards
-function countUnplayedCards(cards) {
-  var unplayed = 0;
-  // loop through cards
-  for (var card in cards) {
-    card = cards[card];
-    if (card.nodeType) {
-      // check if card has been played
-      if (card.dataset.played !== 'true') unplayed++;
-    }
-  }
-  return unplayed;
-}
-
-// flip cards
-function flipCards(selectors, direction) {
-  var els = d.querySelectorAll(selectors); // query all elements
-  for (var e in els) {// loop through elements
-    e = els[e];
-    if (e.nodeType) {
-      switch (direction) {
-        case 'up':
-          if (e.dataset.played !== 'true') {
-            // if flipping over tableau card
-            if (e.dataset.pile === 'tab') {
-              // loop through unplayed cards
-              for (var card in unplayedTabCards) {
-                card = unplayedTabCards[card];
-                // if rank and suit matches
-                if (e.dataset.rank === card[0] &&
-                e.dataset.suit === card[1])
-                  // score 5 points
-                  updateScore(5);
-              }
-            }
-            e.className += ' up'; // add class
-            e.dataset.played = 'true'; // mark as played
-          }
-          break;
-        case 'down':
-          e.className = 'card'; // reset class
-          delete e.dataset.played; // reset played data attribute
-        default:break;}
-
-    }
-  }
-  return;
-}
-
-// get face down cards in tableau pile
-function getUnplayedTabCards() {
-  // reset array
-  unplayedTabCards = [];
-  // get all face down card elements
-  var els = d.querySelectorAll('#tab .card:not([data-played="true"])');
-  for (var e in els) {// loop through elements
-    e = els[e];
-    if (e.nodeType) {
-      unplayedTabCards.push([e.dataset.rank, e.dataset.suit]);
-    }
-  }
-  return unplayedTabCards;
-}
-
-// size cards
-function sizeCards(selector = '.pile', ratio = 1.4) {
-  var s = selector;
-  var r = ratio;
-  var e = d.querySelector(s); // query element
-  var h = e.offsetWidth * r; // get height of element
-  // set row heights
-  $upper.style.height = h + 10 + 'px';
-  $lower.style.height = h + 120 + 'px';
-  // set height of elements
-  var els = d.querySelectorAll(s); // query all elements
-  for (var e in els) {// loop through elements
-    e = els[e];
-    if (e.nodeType) e.style.height = h + 'px'; // set height in css
-  }
-}
-
-// gameplay
-function play(table) {
-  // check for winning table
-  if (checkForWin(table)) return;
-  // check for autowin
-  checkForAutoWin(table);
-  // bind click events
-  bindClick(
-  '#stock .card:first-child,' +
-  '#waste .card:first-child,' +
-  '#fnd .card:first-child,' +
-  '#tab .card[data-played="true"]');
-
-  // bind dbl click events
-  bindClick(
-  '#waste .card:first-child,' +
-  '#tab .card:last-child',
-  'double');
-
-  console.log('Make Your Move...');
-  console.log('......');
-}
-
-// bind click events
-function bindClick(selectors, double) {
-  var elements = d.querySelectorAll(selectors); // query all elements
-  // loop through elements
-  for (var e in elements) {
-    e = elements[e];
-    // add event listener
-    if (e.nodeType) {
-      if (!double) e.addEventListener('click', select);else
-      e.addEventListener('dblclick', select);
-    }
-  }
-  return;
-}
-
-// unbind click events
-function unbindClick(selectors, double) {
-  var elements = d.querySelectorAll(selectors); // query all elements
-  // loop through elements
-  for (var e in elements) {
-    e = elements[e];
-    // remove event listener
-    if (e.nodeType) {
-      if (!double) e.removeEventListener('click', select);else
-      e.removeEventListener('dblclick', select);
-    }
-  }
-  return;
-}
-
-// on click handler: select
-var clicks = 0; // set counter for counting clicks
-var clickDelay = 200; // set delay for double click
-var clickTimer = null; // set timer for timeout function
-function select(event) {
-
-  // prevent default
-  event.preventDefault();
-
-  // start timer
-  if ($timer.dataset.action !== 'start') {
-    timer('start');
-  }
-
-  // if timestamp matches then return false
-  var time = event.timeStamp; // get timestamp
-  if (time === lastEventTime) {
-    console.log('Status: Timestamp Matches, False Click');
+  function legal(from, dest) {
+    var pile = pileOf(from), c = pile[from.i], n = pile.length - from.i;
+    if (dest.t === from.t && dest.p === from.p) return false;
+    if (dest.t === 'found') return n === 1 && canFound(c, dest.p);
+    if (dest.t === 'tab') return canTab(c, dest.p);
     return false;
-  } else
-  {
-    lastEventTime = time; // cache timestamp
   }
-
-  // get variables
-  var e = event.target; // get element
-  var isSelected = e.dataset.selected; // get selected attribute
-  var rank = e.dataset.rank; // get rank attribute
-  var suit = e.dataset.suit; // get suit attribute
-  var pile = e.dataset.pile; // get pile attribute
-  var action = e.dataset.action; // get action attribute
-
-  // create card array
-  if (rank && suit) var card = [rank, suit];
-
-  // count clicks
-  clicks++;
-
-  // single click
-  if (clicks === 1 && event.type === 'click') {
-    clickTimer = setTimeout(function () {
-      console.log('Single Click Detected', event);
-
-      // reset click counter
-      clicks = 0;
-
-      // if same card is clicked
-      if (e.dataset.selected === 'true') {
-        console.log('Status: Same Card Clicked');
-        // deselect card
-        delete e.dataset.selected;
-        delete $table.dataset.move;
-        delete $table.dataset.selected;
-        delete $table.dataset.source;
-        console.log('Card Deselected', card, e);
-      }
-
-      // if move is in progress
-      else if ($table.dataset.move) {
-          console.log('Status: A Move Is In Progess');
-          // get selected
-          var selected = $table.dataset.selected.split(',');
-          // update table dataset with destination pile
-          $table.dataset.dest = e.closest('.pile').dataset.pile;
-          // get destination card or pile
-          if (card) var dest = card;else
-          var dest = $table.dataset.dest;
-          // validate move
-          if (validateMove(selected, dest)) {
-            // make move
-            makeMove();
-            reset(table);
-            render(table, playedCards);
-            play(table);
-          } else {
-            console.log('Move is Invalid. Try again...');
-            reset(table);
-            render(table, playedCards);
-            play(table);
-            console.log('Card Deselected', card, e);
-          }
-        }
-
-        // if stock is clicked
-        else if (pile === 'stock') {
-            console.log('Status: Stock Pile Clicked');
-            // if stock isn't empty
-            if (table['stock'].length) {
-              // move card from stock to waste
-              move(table['stock'], table['waste']);
-              reset(table);
-              render(table, playedCards);
-              // if empty, then bind click to stock pile element
-              if (table['stock'].length === 0) bindClick('#stock .reload-icon');
-              // count move
-              countMove(moves++);
-              // return to play
-              play(table);
-            }
-          }
-
-          // if stock reload icon is clicked
-          else if (action === 'reload') {
-              console.log('Reloading Stock Pile');
-              // remove event listener
-              unbindClick('#stock .reload-icon');
-              // reload stock pile
-              if (table['waste'].length) {
-                table['stock'] = table['waste']; // move waste to stock
-                table['waste'] = []; // empty waste
-              }
-              // render table
-              render(table, playedCards);
-              // turn all stock cards face down
-              flipCards('#stock .card', 'down');
-              // update score by -100 pts
-              updateScore(-100);
-              // return to play
-              play(table);
-            }
-
-            // if no move is in progress
-            else {
-                // select card
-                e.dataset.selected = 'true';
-                $table.dataset.move = 'true';
-                $table.dataset.selected = card;
-                $table.dataset.source = e.closest('.pile').dataset.pile;
-                // if ace is selected
-                if (rank === 'A') {
-                  console.log('Ace Is Selected');
-                  bindClick('#fnd #' + suit + 's.pile[data-empty="true"]');
-                }
-                if (rank === 'K') {
-                  console.log('King Is Selected');
-                  bindClick('#tab .pile[data-empty="true"]');
-                }
-              }
-
-    }, clickDelay);
-  }
-
-  // double click
-  else if (event.type === 'dblclick') {
-      console.log('Double Click Detected', event);
-      clearTimeout(clickTimer); // prevent single click
-      clicks = 0; // reset click counter
-      // select card
-      e.dataset.selected = 'true';
-      $table.dataset.move = 'true';
-      $table.dataset.selected = card;
-      $table.dataset.source = e.closest('.pile').dataset.pile;
-      // get destination pile
-      if (card) var dest = card[1] + 's';
-      // update table dataset with destination
-      $table.dataset.dest = dest;
-      // validate move
-      if (validateMove(card, dest)) {
-        // make move
-        makeMove();
-        reset(table);
-        render(table, playedCards);
-        play(table);
-      } else {
-        console.log('Move is Invalid. Try again...');
-        reset(table);
-        render(table, playedCards);
-        play(table);
-        console.log('Card Deselected', card, e);
-      }
-
-    }
-
-}
-
-// validate move
-function validateMove(selected, dest) {
-  console.log('Validating Move...', selected, dest);
-
-  // if selected card exists
-  if (selected) {
-    var sRank = parseRankAsInt(selected[0]);
-    var sSuit = selected[1];
-  }
-
-  // if destination is another card
-  if (dest.constructor === Array) {
-    console.log('Desitination appears to be a card');
-    var dRank = parseRankAsInt(dest[0]);
-    var dSuit = dest[1];
-    var dPile = $table.dataset.dest;
-    // if destination pile is foundation
-    if (['spades', 'hearts', 'diamonds', 'clubs'].indexOf(dPile) >= 0) {
-      // if rank isn't in sequence then return false
-      if (dRank - sRank !== -1) {
-        console.log('Rank sequence invalid');
-        console.log(dRank - sRank);
-        return false;
-      }
-      // if suit isn't in sequence then return false
-      if (sSuit !== dSuit) {
-        console.log('Suit sequence invalid');
-        return false;
-      }
-    }
-    // if destination pile is tableau
-    else {
-        // if rank isn't in sequence then return false
-        if (dRank - sRank !== 1) {
-          console.log('Rank sequence invalid');
-          return false;
-        }
-        // if suit isn't in sequence then return false
-        if ((sSuit === 'spade' || sSuit === 'club') && (
-        dSuit === 'spade' || dSuit === 'club') ||
-        (sSuit === 'heart' || sSuit === 'diamond') && (
-        dSuit === 'heart' || dSuit === 'diamond')) {
-          console.log('Suit sequence invalid');
-          return false;
-        }
-      }
-    // else return true
-    console.log('Valid move');
-    return true;
-
-  }
-
-  // if destination is foundation pile
-  if (['spades', 'hearts', 'diamonds', 'clubs'].indexOf(dest) >= 0) {
-    console.log('Destination appears to be empty foundation');
-
-    // get last card in destination pile
-    var lastCard = d.querySelector('#' + dest + ' .card:first-child');
-    if (lastCard) {
-      var dRank = parseRankAsInt(lastCard.dataset.rank);
-      var dSuit = lastCard.dataset.suit;
-    }
-    // if suit doesn't match pile then return false
-    if (sSuit + 's' !== dest) {
-      console.log('Suit sequence invalid');
-      return false;
-    }
-    // if rank is ace then return true
-    else if (sRank === 1) {
-        console.log('Valid Move');
-        return true;
-      }
-      // if rank isn't in sequence then return false
-      else if (sRank - dRank !== 1) {
-          console.log('Rank sequence invalid');
-          return false;
-        }
-        // else return true
-        else {
-            console.log('Valid move');
-            return true;
-          }
-  }
-
-  // if destination is empty tableau pile
-  if (dest >= 1 && dest <= 7) {
-    console.log('Destination appears tp be empty tableau');
+  function doMove(from, dest) {
+    if (!legal(from, dest)) return false;
+    snapshot();
+    var src = pileOf(from), cards = src.splice(from.i), dst = dest.t === 'found' ? S.found[dest.p] : S.tab[dest.p];
+    Array.prototype.push.apply(dst, cards);
+    if (from.t === 'waste') addScore(dest.t === 'found' ? 10 : 5);
+    else if (from.t === 'found') addScore(-15);
+    else if (dest.t === 'found') addScore(10);
+    if (from.t === 'tab' && src.length && !S.up[src[src.length - 1]]) { S.up[src[src.length - 1]] = true; addScore(5); }
+    S.moves++;
+    began();
+    afterAction();
     return true;
   }
-
-}
-
-// make move
-function makeMove() {
-  console.log('Making Move...');
-
-  // get source and dest
-  var source = $table.dataset.source;
-  var dest = $table.dataset.dest;
-  console.log('From ' + source + ' pile to ' + dest + ' pile');
-
-  // if pulling card from waste pile
-  if (source === 'waste') {
-    // if moving card to foundation pile
-    if (isNaN(dest)) {
-      console.log('Moving To Foundation Pile');
-      move(table[source], table[dest], true);
-      updateScore(10); // score 10 pts
-    }
-    // if moving card to tableau pile
-    else {
-        console.log('Moving To Tableau Pile');
-        move(table[source], table['tab'][dest], true);
-        updateScore(5); // score 5 pts
-      }
+  function dealStock() {
+    if (S.won) return;
+    if (S.stock.length) {
+      snapshot();
+      var c = S.stock.pop(); S.up[c] = true; S.waste.push(c); S.moves++;
+    } else if (S.waste.length) {
+      snapshot();
+      S.stock = S.waste.reverse(); S.waste = [];
+      S.stock.forEach(function (c) { S.up[c] = false; });
+      addScore(-100);
+    } else return;
+    began();
+    afterAction();
   }
-
-  // if pulling card from foundation pile
-  else if (['spades', 'hearts', 'diamonds', 'clubs'].indexOf(source) >= 0) {
-      // only allow moves to tableau piles
-      if (isNaN(dest)) {
-        console.log('That move is not allowed');
-        return false;
-      }
-      // if moving card to tableau pile
-      else {
-          console.log('Moving To Tableau Pile');
-          move(table[source], table['tab'][dest], true);
-          updateScore(-15); // score -15 pts
-        }
+  // Best destination for a tap / double-click.
+  function autoDest(from) {
+    var pile = pileOf(from), c = pile[from.i], i, t;
+    if (from.i === pile.length - 1 && from.t !== 'found' && canFound(c, suit(c))) return { t: 'found', p: suit(c) };
+    var empty = null;
+    for (i = 1; i <= 7; i++) {
+      t = from.t === 'tab' ? (from.p + i) % 7 : i - 1;
+      if (from.t === 'tab' && t === from.p) continue;
+      if (!canTab(c, t)) continue;
+      if (S.tab[t].length) return { t: 'tab', p: t };
+      // moving a King that already sits at the bottom of a column to another empty column is pointless
+      if (!(from.t === 'tab' && from.i === 0) && empty === null) empty = { t: 'tab', p: t };
     }
-
-    // if pulling card from tableau pile
-    else {
-        // if moving card to foundation pile
-        if (isNaN(dest)) {
-          console.log('Moving To Foundation Pile');
-          move(table['tab'][source], table[dest], true);
-          updateScore(10); // score 10 pts
-        }
-        // if moving card to tableau pile
-        else {
-            console.log('Moving To Tableau Pile');
-            // get selected card
-            var selected = d.querySelector('.card[data-selected="true"');
-            // get cards under selected card
-            var selectedCards = [selected];
-            while (selected = selected['nextSibling']) {
-              if (selected.nodeType) selectedCards.push(selected);
-            }
-            // move card(s)
-            move(
-            table['tab'][source],
-            table['tab'][dest],
-            true,
-            selectedCards.length);
-
-          }
-      }
-
-  // unbind click events
-  unbindClick(
-  '#stock .card:first-child,' +
-  '#waste .card:first-child,' +
-  '#fnd .card:first-child,' +
-  '#fnd #spades.pile[data-empty="true"],' +
-  '#fnd #hearts.pile[data-empty="true"],' +
-  '#fnd #diamonds.pile[data-empty="true"],' +
-  '#fnd #clubs.pile[data-empty="true"],' +
-  '#tab .card[data-played="true"],' +
-  '#tab .pile[data-empty="true"]');
-
-  // unbind double click events
-  unbindClick(
-  '#waste .card:first-child' +
-  '#tab .card:last-child',
-  'double');
-
-
-  // count move
-  countMove(moves++);
-
-  // reset table
-  console.log('Ending Move...');
-
-  return;
-}
-
-// parse rank as integer
-function parseRankAsInt(rank) {
-  // assign numerical ranks to letter cards
-  switch (rank) {
-    case 'A':rank = '1';break;
-    case 'J':rank = '11';break;
-    case 'Q':rank = '12';break;
-    case 'K':rank = '13';break;
-    default:break;}
-
-  // return integer value for rank
-  return parseInt(rank);
-}
-
-// parse integer as rank
-function parseIntAsRank(int) {
-  // parse as integer
-  rank = parseInt(int);
-  // assign letter ranks to letter cards
-  switch (rank) {
-    case 1:rank = 'A';break;
-    case 11:rank = 'J';break;
-    case 12:rank = 'Q';break;
-    case 13:rank = 'K';break;
-    default:break;}
-
-  return rank;
-}
-
-// reset table
-function reset(table) {
-  delete $table.dataset.move;
-  delete $table.dataset.selected;
-  delete $table.dataset.source;
-  delete $table.dataset.dest;
-  delete $fnd.dataset.played;
-  delete $fnd.dataset.unplayed;
-  delete $tab.dataset.played;
-  delete $tab.dataset.unplayed;
-  console.log('Table reset');
-}
-
-// timer funcion
-function timer(action) {
-  // declare timer vars
-  var minutes = 0;
-  var seconds = 0;
-  var gameplay = d.body.dataset.gameplay;
-  // set timer attribute
-  $timer.dataset.action = action;
-  // switch case
-  switch (action) {
-    // start timer
-    case 'start':
-      console.log('Starting Timer...');
-      // looping function
-      clock = setInterval(function () {
-        // increment
-        time++;
-        // parse minutes and seconds
-        minutes = parseInt(time / 60, 10);
-        seconds = parseInt(time % 60, 10);
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-        // output to display
-        $timerSpan.textContent = minutes + ':' + seconds;
-        // if 10 seconds has passed decrement score by 2 pts
-        if (time % 10 === 0) updateScore(-2);
-      }, 1000);
-      // add dataset to body
-      d.body.dataset.gameplay = 'active';
-      // unbind click to play button
-      if (gameplay === 'paused')
-      $playPause.removeEventListener('click', playTimer);
-      // bind click to pause button
-      $playPause.addEventListener('click', pauseTimer = function () {
-        timer('pause');
-      });
-      break;
-    // pause timer
-    case 'pause':
-      console.log('Pausing Timer...');
-      clearInterval(clock);
-      d.body.dataset.gameplay = 'paused';
-      // unbind click to pause button
-      if (gameplay === 'active')
-      $playPause.removeEventListener('click', pauseTimer);
-      // bind click tp play button
-      $playPause.addEventListener('click', playTimer = function () {
-        timer('start');
-      });
-      break;
-    // stop timer
-    case 'stop':
-      console.log('Stoping Timer...');
-      clearInterval(clock);
-      d.body.dataset.gameplay = 'over';
-      break;
-    // default
-    default:break;}
-
-  console.log(time);
-  return;
-}
-
-// move counter
-function countMove(moves) {
-  console.log('Move Counter', moves);
-  // set move attribute
-  $moveCount.dataset.moves = moves + 1;
-  // output to display
-  $moveCountSpan.textContent = moves + 1;
-  return;
-}
-
-// scoring function
-/*
-   Standard scoring is determined as follows:
-   - Waste to Tableau  5
-   - Waste to Foundation  10
-   - Tableau to Foundation   10
-   - Turn over Tableau card  5
-   - Foundation to Tableau   −15
-   - Recycle waste when playing by ones  −100
-   (minimum score is 0)
-    Moving cards directly from the Waste stack to a Foundation awards 10 points. However, if the card is first moved to a Tableau, and then to a Foundation, then an extra 5 points are received for a total of 15. Thus in order to receive a maximum score, no cards should be moved directly from the Waste to Foundation.
-    For every 10 seconds of play, 2 points are taken away. Bonus points are calculated with the formula of 700,000 / (seconds to finish) if the game takes more than 30 seconds. If the game takes less than 30 seconds, no bonus points are awarded.
-*/
-
-
-function updateScore(points) {
-  console.log('Updating Score', points);
-  // get score
-  score = parseInt($score.dataset.score) + points;
-  // set minimum score to 0
-  score = score < 0 ? 0 : score;
-  // parse as integer
-  score = parseInt(score);
-  // set score attribute
-  $score.dataset.score = score;
-  // output to display
-  $score.children[1].textContent = score;
-  return score;
-}
-
-// calculate bonus points
-function getBonus() {
-  if (time >= 30) bonus = parseInt(700000 / time);
-  console.log(bonus);
-  return bonus;
-}
-
-// check for win
-function checkForWin(table) {
-  // if all foundation piles are full
-  if (table['spades'].length +
-  table['hearts'].length +
-  table['diamonds'].length +
-  table['clubs'].length ===
-  52) {
-    console.log('Game Has Been Won');
-    // stop timer
-    timer('stop');
-    // bonus points for time
-    updateScore(getBonus());
-    // throw confetti
-    throwConfetti();
-    // return true
+    return empty;
+  }
+  function undo() {
+    if (!hist.length || S.won || autoRunning) return;
+    var h = JSON.parse(hist.pop());
+    S.stock = h.stock; S.waste = h.waste; S.found = h.found; S.tab = h.tab; S.up = h.up; S.score = h.score; S.moves++;
+    afterAction();
+  }
+  function canAutoFinish() {
+    if (S.won || S.stock.length || S.waste.length) return false;
+    for (var t = 0; t < 7; t++) for (var i = 0; i < S.tab[t].length; i++) if (!S.up[S.tab[t][i]]) return false;
     return true;
-  } else
-  return false;
-}
-
-// check for auto win
-function checkForAutoWin(table) {
-  // if all tableau cards are played and stock is empty
-  if (parseInt($tab.dataset.unplayed) +
-  table['stock'].length +
-  table['waste'].length === 0) {
-    // show auto win button
-    $autoWin.style.display = 'block';
-    // bind click to auto win button
-    $autoWin.addEventListener('click', autoWin);
   }
-  return;
-}
+  function afterAction() {
+    var total = 0;
+    S.found.forEach(function (f) { total += f.length; });
+    if (total === 52 && !S.won) win();
+    save();
+    render();
+  }
+  function autoFinish() {
+    if (autoRunning) return;
+    autoRunning = true;
+    autoBtn.classList.remove('on');
+    began();
+    (function step() {
+      if (S.won) { autoRunning = false; return; }
+      var best = null;
+      for (var t = 0; t < 7; t++) {
+        var p = S.tab[t]; if (!p.length) continue;
+        var c = p[p.length - 1];
+        if (canFound(c, suit(c)) && (!best || rank(c) < rank(best.c))) best = { c: c, t: t, i: p.length - 1 };
+      }
+      if (!best) { autoRunning = false; render(); return; }
+      doMove({ t: 'tab', p: best.t, i: best.i }, { t: 'found', p: suit(best.c) });
+      setTimeout(step, 85);
+    })();
+  }
+  function win() {
+    S.won = true;
+    stopTimer();
+    var bonus = S.time >= 30 ? Math.floor(700000 / S.time) : 0;
+    S.score += bonus;
+    stats.won++;
+    var newBest = S.score > stats.best;
+    if (newBest) stats.best = S.score;
+    if (!stats.bestTime || S.time < stats.bestTime) stats.bestTime = S.time;
+    store(KEY_STATS, stats);
+    hist = [];
+    $('winRows').innerHTML =
+      row('Time', fmt(S.time)) + row('Moves', S.moves) + row('Time bonus', '+' + bonus) +
+      '<div><span>Final score</span><b' + (newBest ? ' class="new"' : '') + '>' + S.score + (newBest ? ' (new best!)' : '') + '</b></div>' +
+      row('Best score', stats.best) + row('Games won', stats.won + ' of ' + stats.played);
+    setTimeout(function () { $('ovWin').classList.add('on'); confetti.start(); }, 650);
+  }
+  function row(a, b) { return '<div><span>' + a + '</span><b>' + b + '</b></div>'; }
+  function fmt(t) { var m = Math.floor(t / 60), s = t % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
 
-// auto win
-function autoWin() {
-  console.log('Huzzah!');
-  // hide auto win button
-  $autoWin.style.display = 'none';
-  // unbind click to auto win button
-  $autoWin.removeEventListener('click', autoWin);
-  // unbind click events
-  unbindClick(
-  '#stock .card:first-child,' +
-  '#waste .card:first-child,' +
-  '#fnd .card:first-child,' +
-  '#fnd #spades.pile[data-empty="true"],' +
-  '#fnd #hearts.pile[data-empty="true"],' +
-  '#fnd #diamonds.pile[data-empty="true"],' +
-  '#fnd #clubs.pile[data-empty="true"],' +
-  '#tab .card[data-played="true"],' +
-  '#tab .pile[data-empty="true"]');
+  function newGame() {
+    stopTimer();
+    confetti.stop();
+    ['ovWin', 'ovNew', 'ovPause'].forEach(function (id) { $(id).classList.remove('on'); });
+    paused = false; autoRunning = false;
+    S = fresh(); hist = [];
+    save();
+    dealAnimation();
+  }
 
-  // unbind double click events
-  unbindClick(
-  '#waste .card:first-child' +
-  '#tab .card:last-child',
-  'double');
-
-  // reset table
-  reset(table);
-  render(table);
-  // animate cards to foundation piles
-  autoWinAnimation(table);
-  // stop timer
-  timer('stop');
-  // bonus points for time
-  updateScore(getBonus());
-}
-
-// auto win animation
-function autoWinAnimation(table) {
-  // set number of iterations
-  var i = parseInt($tab.dataset.played);
-  // create animation loop
-  function animation_loop() {
-    // get lowest ranking card
-    var bottomCards = []; // create array for the bottom cards
-    var els = d.querySelectorAll('#tab .card:last-child');
-    for (var e in els) {// loop through elements
-      e = els[e];
-      if (e.nodeType)
-      bottomCards.push(parseRankAsInt(e.dataset.rank));
-    }
-    // get the lowest rank from array of bottom cards
-    var lowestRank = Math.min.apply(Math, bottomCards);
-    // parse integer as rank
-    var rank = parseIntAsRank(lowestRank);
-    // get element with rank
-    var e = d.querySelector('#tab .card[data-rank="' + rank + '"]');
-
-    // setup move
-    // get suit of card
-    var suit = e.dataset.suit;
-    // create card array with rank and suit
-    var card = [rank, suit];
-    // get destination pile
-    var dest = suit + 's';
-
-    // make move
-    if (validateMove(card, dest)) {
-      // set source pile
-      var pile = e.parentElement.parentElement;
-      $table.dataset.source = pile.dataset.pile;
-      // set dest pile
-      $table.dataset.dest = dest;
-      // make move
-      makeMove();
-      reset(table);
-      render(table, playedCards);
+  // ---------- layout ----------
+  var L = null, els = [], slots = {};
+  function makeCard(c) {
+    var d = document.createElement('div'), r = rank(c), s = suit(c), use = '<svg viewBox="0 0 100 100"><use href="#s' + s + '"/></svg>';
+    d.className = 'card ' + (isRed(c) ? 'r' : 'k') + (r === 1 ? ' ace' : '');
+    d.dataset.c = c;
+    var mid = r > 10 ? '<div class="fc"><b>' + FACE[r] + '</b>' + use + '</div>' : '<svg class="pip" viewBox="0 0 100 100"><use href="#s' + s + '"/></svg>';
+    var ix = RANKS[r - 1] + use;
+    d.innerHTML = '<div class="f"><div class="ix">' + ix + '</div>' + mid + '<div class="ix ix2">' + ix + '</div></div>';
+    board.appendChild(d);
+    return d;
+  }
+  function makeSlot(cls, inner) {
+    var d = document.createElement('div'); d.className = 'slot ' + cls; d.innerHTML = inner || ''; board.appendChild(d); return d;
+  }
+  function build() {
+    for (var c = 0; c < 52; c++) els.push(makeCard(c));
+    slots.stock = makeSlot('stock', '<svg viewBox="0 0 100 100"><path d="M78 38A30 30 0 1 0 80 62"/><path d="M80 18v22H58"/></svg>');
+    slots.waste = makeSlot('waste');
+    slots.found = []; slots.tab = [];
+    for (var f = 0; f < 4; f++) slots.found.push(makeSlot('found', '<svg viewBox="0 0 100 100"><use href="#s' + f + '"/></svg>'));
+    for (var t = 0; t < 7; t++) slots.tab.push(makeSlot('tab'));
+  }
+  function layout() {
+    var W = board.clientWidth, H = board.clientHeight, pad = 8;
+    var cwStd = Math.min((W - 2 * pad) / 7.7, (H - 2 * pad) / 5.6);
+    var cwSide = Math.min((W - 2 * pad) / 11.5, (H - 2 * pad) / 4.3);
+    var side = cwSide > cwStd * 1.12;
+    var cw = Math.floor(side ? cwSide : cwStd);
+    cw = Math.max(24, Math.min(cw, 190));
+    var ch = Math.round(cw * 1.4), g = Math.round(cw * 0.11), i;
+    var l = { cw: cw, ch: ch, side: side, found: [], tab: [] };
+    if (!side) {
+      var bw = 7 * cw + 6 * g, ox = Math.round((W - bw) / 2), y0 = pad + Math.round(cw * 0.04);
+      var col = function (k) { return ox + k * (cw + g); };
+      l.stock = { x: col(0), y: y0 }; l.waste = { x: col(1), y: y0 };
+      for (i = 0; i < 4; i++) l.found.push({ x: col(3 + i), y: y0 });
+      var ty = y0 + ch + Math.round(cw * 0.28);
+      for (i = 0; i < 7; i++) l.tab.push({ x: col(i), y: ty });
     } else {
-      console.log('Move is Invalid. Try again...');
-      reset(table);
-      render(table, playedCards);
+      var sep = Math.round(cw * 0.3), bw2 = 10 * cw + 7 * g + 2 * sep + g, ox2 = Math.round((W - bw2) / 2), y1 = pad;
+      l.stock = { x: ox2, y: y1 }; l.waste = { x: ox2, y: y1 + ch + g };
+      var tx = ox2 + cw + sep;
+      for (i = 0; i < 7; i++) l.tab.push({ x: tx + i * (cw + g), y: y1 });
+      var fx = tx + 7 * (cw + g) - g + sep;
+      for (i = 0; i < 4; i++) l.found.push({ x: fx + (i % 2) * (cw + g), y: y1 + Math.floor(i / 2) * (ch + g) });
     }
-    // let's do it again in 100ms
-    setTimeout(function () {
-      i--;
-      if (i !== 0) animation_loop();
-      // at the end lets celebrate!
-      else throwConfetti();
-    }, 100);
-  };
-  // run animation loop
-  animation_loop();
-}
-
-// throw confetti
-/* Thanks to @gamanox
-   https://codepen.io/gamanox/pen/FkEbH
-*/
-function throwConfetti() {
-  console.log('Confetti!');
-
-  var COLORS, Confetti, NUM_CONFETTI, PI_2, canvas, confetti, context, drawCircle, drawCircle2, drawCircle3, i, range, xpos;
-
-  NUM_CONFETTI = 60;
-
-  COLORS = [[255, 255, 255], [255, 144, 0], [255, 255, 255], [255, 144, 0], [0, 277, 235]];
-
-  PI_2 = 2 * Math.PI;
-
-  canvas = d.getElementById("confetti");
-
-  context = canvas.getContext("2d");
-
-  window.w = 0;
-
-  window.h = 0;
-
-  window.resizeWindow = function () {
-    window.w = canvas.width = window.innerWidth;
-    return window.h = canvas.height = window.innerHeight;
-  };
-
-  window.addEventListener('resize', resizeWindow, false);
-
-  window.onload = function () {
-    return setTimeout(resizeWindow, 0);
-  };
-
-  range = function (a, b) {
-    return (b - a) * Math.random() + a;
-  };
-
-  drawCircle = function (x, y, r, style) {
-    context.beginPath();
-    context.moveTo(x, y);
-    context.bezierCurveTo(x - 17, y + 14, x + 13, y + 5, x - 5, y + 22);
-    context.lineWidth = 3;
-    context.strokeStyle = style;
-    return context.stroke();
-  };
-
-  drawCircle2 = function (x, y, r, style) {
-    context.beginPath();
-    context.moveTo(x, y);
-    context.lineTo(x + 10, y + 10);
-    context.lineTo(x + 10, y);
-    context.closePath();
-    context.fillStyle = style;
-    return context.fill();
-  };
-
-  drawCircle3 = function (x, y, r, style) {
-    context.beginPath();
-    context.moveTo(x, y);
-    context.lineTo(x + 10, y + 10);
-    context.lineTo(x + 10, y);
-    context.closePath();
-    context.fillStyle = style;
-    return context.fill();
-  };
-
-  xpos = 0.9;
-
-  d.onmousemove = function (e) {
-    return xpos = e.pageX / w;
-  };
-
-  window.requestAnimationFrame = function () {
-    return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
-      return window.setTimeout(callback, 100 / 20);
-    };
-  }();
-
-  Confetti = function () {
-    function Confetti() {
-      this.style = COLORS[~~range(0, 5)];
-      this.rgb = "rgba(" + this.style[0] + "," + this.style[1] + "," + this.style[2];
-      this.r = ~~range(2, 6);
-      this.r2 = 2 * this.r;
-      this.replace();
+    l.bottom = H - pad;
+    board.style.setProperty('--cw', cw + 'px');
+    board.style.setProperty('--ch', ch + 'px');
+    board.classList.toggle('big', cw >= 66);
+    L = l;
+    place(slots.stock, l.stock); place(slots.waste, l.waste);
+    for (i = 0; i < 4; i++) place(slots.found[i], l.found[i]);
+    for (i = 0; i < 7; i++) place(slots.tab[i], l.tab[i]);
+  }
+  function place(el, p) { el.style.width = L.cw + 'px'; el.style.height = L.ch + 'px'; el.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px)'; }
+  function setPos(el, x, y, z) { el.style.transform = 'translate(' + x + 'px,' + y + 'px)'; el.style.zIndex = z; el._x = x; el._y = y; }
+  function tabOffsets(t) {
+    var p = S.tab[t], down = 0, up = 0, i;
+    for (i = 0; i < p.length; i++) { if (S.up[p[i]]) up++; else down++; }
+    var dOff = L.ch * 0.12, uOff = L.ch * (L.cw < 60 ? 0.3 : 0.27);
+    var avail = L.bottom - L.tab[t].y - L.ch;
+    var need = down * dOff + Math.max(0, up - 1) * uOff;
+    if (need > avail && need > 0) {
+      var k = Math.max(0, avail) / need; dOff *= k; uOff *= k;
     }
+    return { d: dOff, u: uOff };
+  }
+  function cardPos(c) {
+    var l = where(c);
+    if (l.t === 'stock') return { x: L.stock.x, y: L.stock.y, z: 10 + l.i };
+    if (l.t === 'waste') return { x: L.waste.x, y: L.waste.y, z: 100 + l.i };
+    if (l.t === 'found') return { x: L.found[l.p].x, y: L.found[l.p].y, z: 200 + l.i };
+    var o = tabOffsets(l.p), y = L.tab[l.p].y, p = S.tab[l.p];
+    for (var i = 0; i < l.i; i++) y += S.up[p[i]] ? o.u : o.d;
+    return { x: L.tab[l.p].x, y: Math.round(y), z: 300 + l.i };
+  }
+  var draggingFrom = null;
+  function render() {
+    if (!L) layout();
+    for (var c = 0; c < 52; c++) {
+      var e = els[c], p = cardPos(c);
+      e.classList.toggle('down', !S.up[c]);
+      e.classList.toggle('stockc', where(c).t === 'stock');
+      e.classList.remove('drag');
+      setPos(e, p.x, p.y, p.z);
+    }
+    hud();
+    autoBtn.classList.toggle('on', canAutoFinish() && !autoRunning);
+  }
+  function hud() {
+    $('tTime').textContent = fmt(S.time);
+    $('tMoves').textContent = S.moves;
+    $('tScore').textContent = S.score;
+    $('bUndo').disabled = !hist.length || S.won;
+  }
+  function dealAnimation() {
+    board.classList.add('noanim');
+    for (var c = 0; c < 52; c++) { els[c].classList.add('down'); setPos(els[c], L.stock.x, L.stock.y, 10 + c); els[c].style.transitionDelay = ''; }
+    void board.offsetWidth;
+    board.classList.remove('noanim');
+    var order = 0;
+    for (var row = 0; row < 7; row++) for (var t = row; t < 7; t++) { els[S.tab[t][row]].style.transitionDelay = (order++ * 22) + 'ms'; }
+    render();
+    setTimeout(function () { for (var c = 0; c < 52; c++) els[c].style.transitionDelay = ''; }, 900);
+  }
 
-    Confetti.prototype.replace = function () {
-      this.opacity = 0;
-      this.dop = 0.03 * range(1, 4);
-      this.x = range(-this.r2, w - this.r2);
-      this.y = range(-20, h - this.r2);
-      this.xmax = w - this.r;
-      this.ymax = h - this.r;
-      this.vx = range(0, 2) + 8 * xpos - 5;
-      return this.vy = 0.7 * this.r + range(-1, 1);
-    };
+  // ---------- input ----------
+  var drag = null, lastTap = { c: -1, t: 0 };
+  function anyOverlay() { return document.querySelector('.ov.on'); }
+  board.addEventListener('pointerdown', function (e) {
+    if (e.button > 0 || drag || anyOverlay() || autoRunning || S.won) return;
+    if (e.target.closest('#auto')) return;
+    var ce = e.target.closest('.card'), se = e.target.closest('.slot');
+    var info = { id: e.pointerId, sx: e.clientX, sy: e.clientY, moved: false, kind: null, t0: performance.now() };
+    if ((ce && where(+ce.dataset.c).t === 'stock') || se === slots.stock) info.kind = 'stock';
+    else if (ce) {
+      var c = +ce.dataset.c, l = where(c);
+      if (!movable(l)) return;
+      info.kind = 'card'; info.from = l;
+      info.cards = pileOf(l).slice(l.i).map(function (k) { return els[k]; });
+      info.base = info.cards.map(function (el) { return { x: el._x, y: el._y }; });
+    } else return;
+    drag = info;
+    try { board.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+  });
+  board.addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.id || drag.kind !== 'card') return;
+    var dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+    if (!drag.moved && dx * dx + dy * dy < 49) return;
+    if (!drag.moved) { drag.moved = true; draggingFrom = drag.from; drag.cards.forEach(function (el) { el.classList.add('drag'); }); }
+    drag.cards.forEach(function (el, i) { setPos(el, drag.base[i].x + dx, drag.base[i].y + dy, 1000 + i); });
+    highlight(dropTarget());
+  });
+  function finish(e, cancel) {
+    if (!drag || e.pointerId !== drag.id) return;
+    var d = drag; drag = null; draggingFrom = null;
+    highlight(null);
+    if (cancel) { render(); return; }
+    if (d.kind === 'stock') { dealStock(); return; }
+    if (d.moved) {
+      var tgt = dropTarget(d);
+      if (!tgt || !doMove(d.from, tgt)) render();
+      return;
+    }
+    // tap: send the card to the best place
+    var c = +d.cards[0].dataset.c, now = performance.now();
+    if (lastTap.c === c && now - lastTap.t < 350) return; // ignore the 2nd half of a double-click
+    lastTap = { c: c, t: now };
+    if (d.from.t === 'found') return;
+    var dest = autoDest(d.from);
+    if (!dest || !doMove(d.from, dest)) shake(d.cards[0]);
+  }
+  board.addEventListener('pointerup', function (e) { finish(e, false); });
+  board.addEventListener('pointercancel', function (e) { finish(e, true); });
+  board.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  function shake(el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); setTimeout(function () { el.classList.remove('shake'); }, 320); }
+  function dropTarget(d) {
+    d = d || drag;
+    if (!d || !d.moved) return null;
+    var top = d.cards[0], x = top._x, y = top._y, w = L.cw, h = L.ch, best = null, bestA = 0, i;
+    function test(dest, rx, ry, rw, rh) {
+      var ox = Math.min(x + w, rx + rw) - Math.max(x, rx), oy = Math.min(y + h, ry + rh) - Math.max(y, ry);
+      if (ox <= 0 || oy <= 0) return;
+      var a = ox * oy;
+      if (a > bestA && legal(d.from, dest)) { bestA = a; best = dest; }
+    }
+    for (i = 0; i < 4; i++) test({ t: 'found', p: i }, L.found[i].x, L.found[i].y, w, h);
+    for (i = 0; i < 7; i++) {
+      var p = S.tab[i], ty = L.tab[i].y, last = p.length ? els[p[p.length - 1]] : null;
+      var endY = last && !(d.from.t === 'tab' && d.from.p === i) ? last._y : ty;
+      test({ t: 'tab', p: i }, L.tab[i].x - L.cw * 0.1, ty, w * 1.2, endY - ty + h * 1.3);
+    }
+    return best;
+  }
+  var hot = null;
+  function highlight(t) {
+    if (hot) { hot.forEach(function (el) { el.classList.remove('hint'); el.classList.remove('hot'); }); hot = null; }
+    if (!t) return;
+    var pile = t.t === 'found' ? S.found[t.p] : S.tab[t.p];
+    var el = pile.length ? els[pile[pile.length - 1]] : (t.t === 'found' ? slots.found[t.p] : slots.tab[t.p]);
+    el.classList.add(pile.length ? 'hint' : 'hot');
+    hot = [el];
+  }
 
-    Confetti.prototype.draw = function () {
-      var ref;
-      this.x += this.vx;
-      this.y += this.vy;
-      this.opacity += this.dop;
-      if (this.opacity > 1) {
-        this.opacity = 1;
-        this.dop *= -1;
+  // ---------- buttons / keys ----------
+  function setPaused(p) {
+    if (S.won && p) return;
+    paused = p;
+    $('ovPause').classList.toggle('on', p);
+    if (p) { stopTimer(); save(); } else if (S.counted) startTimer();
+  }
+  function askNew() {
+    if (S.moves > 0 && !S.won) { stopTimer(); $('ovNew').classList.add('on'); }
+    else newGame();
+  }
+  $('bUndo').addEventListener('click', undo);
+  $('bPause').addEventListener('click', function () { setPaused(!paused); });
+  $('bResume').addEventListener('click', function () { setPaused(false); });
+  $('bNew').addEventListener('click', askNew);
+  $('bCancel').addEventListener('click', function () { $('ovNew').classList.remove('on'); if (S.counted && !paused) startTimer(); });
+  $('bConfirm').addEventListener('click', newGame);
+  $('bAgain').addEventListener('click', newGame);
+  autoBtn.addEventListener('click', autoFinish);
+  window.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); if (!anyOverlay()) undo(); return; }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key.toLowerCase();
+    if (k === 'u' && !anyOverlay()) undo();
+    else if (k === 'p' || k === 'escape') { if (!$('ovWin').classList.contains('on') && !$('ovNew').classList.contains('on')) setPaused(!paused); }
+    else if ((k === ' ' || k === 'd') && !anyOverlay()) { e.preventDefault(); dealStock(); }
+    else if (k === 'n' && !anyOverlay()) askNew();
+  });
+
+  // ---------- confetti ----------
+  var confetti = (function () {
+    var cv = $('confetti'), ctx = cv.getContext('2d'), parts = [], raf = 0, w = 0, h = 0, dpr = 1;
+    var COLS = ['#ffd23f', '#ffffff', '#ff7a59', '#4dd4ff', '#7cf29c', '#ff5fa2'];
+    function size() { dpr = Math.min(2, window.devicePixelRatio || 1); w = innerWidth; h = innerHeight; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+    function spawn(p, top) {
+      p.x = Math.random() * w; p.y = top ? Math.random() * h * 0.9 - h * 0.35 : -20;
+      p.vx = (Math.random() - 0.5) * 1.6; p.vy = 1.6 + Math.random() * 2.6;
+      p.r = Math.random() * 6.28; p.vr = (Math.random() - 0.5) * 0.25;
+      p.s = 5 + Math.random() * 6; p.c = COLS[(Math.random() * COLS.length) | 0]; p.ph = Math.random() * 6.28;
+      return p;
+    }
+    function frame() {
+      ctx.clearRect(0, 0, w, h);
+      for (var i = 0; i < parts.length; i++) {
+        var p = parts[i];
+        p.ph += 0.05; p.x += p.vx + Math.sin(p.ph) * 0.8; p.y += p.vy; p.r += p.vr;
+        if (p.y > h + 20) spawn(p, false);
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.scale(1, Math.cos(p.ph * 2));
+        ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s * 0.3, p.s, p.s * 0.6); ctx.restore();
       }
-      if (this.opacity < 0 || this.y > this.ymax) {
-        this.replace();
-      }
-      if (!(0 < (ref = this.x) && ref < this.xmax)) {
-        this.x = (this.x + this.xmax) % this.xmax;
-      }
-      drawCircle(~~this.x, ~~this.y, this.r, this.rgb + "," + this.opacity + ")");
-      drawCircle3(~~this.x * 0.5, ~~this.y, this.r, this.rgb + "," + this.opacity + ")");
-      return drawCircle2(~~this.x * 1.5, ~~this.y * 1.5, this.r, this.rgb + "," + this.opacity + ")");
+      raf = requestAnimationFrame(frame);
+    }
+    return {
+      start: function () {
+        size(); cv.style.display = 'block'; parts = [];
+        var n = Math.min(160, Math.round(w * h / 6000) + 40);
+        for (var i = 0; i < n; i++) parts.push(spawn({}, true));
+        cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
+      },
+      stop: function () { cancelAnimationFrame(raf); raf = 0; cv.style.display = 'none'; parts = []; },
+      resize: function () { if (raf) size(); }
     };
+  })();
 
-    return Confetti;
+  // ---------- resize ----------
+  var rzT = 0;
+  function onResize() {
+    document.body.classList.toggle('short', innerHeight < 450);
+    board.classList.add('noanim');
+    layout(); render();
+    confetti.resize();
+    clearTimeout(rzT);
+    rzT = setTimeout(function () { board.classList.remove('noanim'); }, 60);
+  }
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', function () { setTimeout(onResize, 120); });
 
-  }();
-
-  confetti = function () {
-    var j, ref, results;
-    results = [];
-    for (i = j = 1, ref = NUM_CONFETTI; 1 <= ref ? j <= ref : j >= ref; i = 1 <= ref ? ++j : --j) {
-      results.push(new Confetti());
-    }
-    return results;
-  }();
-
-  window.step = function () {
-    var c, j, len, results;
-    requestAnimationFrame(step);
-    context.clearRect(0, 0, w, h);
-    results = [];
-    for (j = 0, len = confetti.length; j < len; j++) {
-      c = confetti[j];
-      results.push(c.draw());
-    }
-    return results;
-  };
-
-  step();
-
-  // fix initial bug when firing
-  resizeWindow();
-
-  // fade in
-  canvas.style.opacity = 0;
-  var tick = function () {
-    canvas.style.opacity = +canvas.style.opacity + 0.01;
-    if (+canvas.style.opacity < 1) {
-      window.requestAnimationFrame &&
-      requestAnimationFrame(tick) ||
-      setTimeout(tick, 100);
-    }
-  };
-  tick();
-
-}
-//# sourceURL=pen.js
-    </script>
-
-
-
-
-
-
-
-</body></html>
+  // ---------- boot ----------
+  build();
+  document.body.classList.toggle('short', innerHeight < 450);
+  layout();
+  var saved = load(KEY_GAME);
+  if (saved && valid(saved) && !saved.won) {
+    S = saved;
+    board.classList.add('noanim'); render(); void board.offsetWidth;
+    setTimeout(function () { board.classList.remove('noanim'); }, 30);
+  } else {
+    S = fresh(); save();
+    dealAnimation();
+  }
+})();
+</script>
+</body>
+</html>
